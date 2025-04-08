@@ -1,11 +1,7 @@
-import React, { useState, useEffect } from "react";
-import ToursTableItem from "./ToursTableItem";
+import React from "react";
+import GuideDetailsTableItem from "./GuideDetailsTableItem";
 
-import Image01 from "../../images/icon-01.svg";
-import Image02 from "../../images/icon-02.svg";
-import Image03 from "../../images/icon-03.svg";
-
-function ToursTable({ list }) {
+function GuideDetailsTable({ list }) {
   return (
     <div className="bg-white dark:bg-gray-800 shadow-xs rounded-xl relative">
       <div>
@@ -25,25 +21,26 @@ function ToursTable({ list }) {
                   <div className="font-semibold text-left">Date</div>
                 </th>
                 <th className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-                  <div className="font-semibold text-left">Guide</div>
+                  <div className="font-semibold">Guide</div>
                 </th>
                 <th className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-                  <div className="font-semibold text-left">Participants</div>
+                  <div className="font-semibold">Participants</div>
                 </th>
               </tr>
             </thead>
             {/* Table body */}
-            {list?.map((tour) => {
+            {list?.map((tour, idx) => {
               return (
-                <ToursTableItem
-                  key={tour?.uid}
-                  uid={tour?.uid}
+                <GuideDetailsTableItem
+                  key={idx}
+                  idx={idx}
                   id={tour?.code}
                   image={tour?.image_url}
-                  name={tour.name}
-                  date={tour?.updatedAt}
-                  guide={tour?.tour_guides?.length}
-                  participants={tour?.tour_participants?.length}
+                  name={tour?.name}
+                  start_date={tour?.start_date}
+                  end_date={tour?.end_date}
+                  tour_guides={tour?.tour_guides?.length}
+                  total_participants={tour?.total_participants}
                 />
               );
             })}
@@ -54,4 +51,4 @@ function ToursTable({ list }) {
   );
 }
 
-export default ToursTable;
+export default GuideDetailsTable;

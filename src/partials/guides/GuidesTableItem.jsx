@@ -1,6 +1,14 @@
 import React from "react";
+import DropdownEditMenu from "../../components/DropdownEditMenu";
+import { useNavigate } from "react-router-dom";
 
 function GuidesTableItem(props) {
+  const navigate = useNavigate();
+
+  const handleGuideClick = (id) => {
+    navigate(`/guides/${id}`);
+  };
+
   return (
     <tbody className="text-sm">
       {/* Row */}
@@ -10,7 +18,12 @@ function GuidesTableItem(props) {
         </td>
         <td className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div className="flex items-center text-gray-800">
-            <div className="font-medium text-sky-600">{props.name}</div>
+            <div
+              onClick={() => handleGuideClick(props.uid)}
+              className="font-medium text-sky-600 cursor-pointer hover:text-sky-700 hover:dark:text-sky-500"
+            >
+              {props.name}
+            </div>
           </div>
         </td>
         <td className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
@@ -34,25 +47,30 @@ function GuidesTableItem(props) {
           </div>
         </td>
         <td className="px-2 first:pl-5 last:pr-10 py-3 whitespace-nowrap flex justify-end items-center">
-          <button
-            onClick={() => props.handleGuideMenuBtnClick(props.id)}
-            className="btn text-gray-900 dark:text-gray-100"
-          >
-            <svg
-              className="w-4 h-4 fill-current"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="5" cy="12" r="1"></circle>
-              <circle cx="12" cy="12" r="1"></circle>
-              <circle cx="19" cy="12" r="1"></circle>
-            </svg>
-          </button>
+          <DropdownEditMenu align="left" className={`relative `}>
+            <li>
+              <button
+                onClick={() => {
+                  console.log("edit clicked");
+                }}
+                className="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex py-1 px-3 w-full cursor-pointer"
+                href="#0"
+              >
+                Edit
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => {
+                  console.log("remove clicked");
+                }}
+                className="font-medium text-sm text-red-500 hover:text-red-600 flex py-1 px-3 w-full cursor-pointer"
+                href="#0"
+              >
+                Remove
+              </button>
+            </li>
+          </DropdownEditMenu>
         </td>
       </tr>
     </tbody>

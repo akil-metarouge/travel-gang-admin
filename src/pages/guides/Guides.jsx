@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 
-import Sidebar from "../partials/Sidebar";
-import Header from "../partials/Header";
-import SearchForm from "../partials/actions/SearchForm";
-import PaginationClassic from "../components/PaginationClassic";
-import GuidesTable from "../partials/guides/GuidesTable";
-import ModalBasic from "../components/ModalBasic";
+import Sidebar from "../../partials/Sidebar";
+import Header from "../../partials/Header";
+import SearchForm from "../../partials/actions/SearchForm";
+import PaginationClassic from "../../components/PaginationClassic";
+import GuidesTable from "../../partials/guides/GuidesTable";
+import ModalBasic from "../../components/ModalBasic";
 
 function Guides() {
   const [sidebarOpen, setSidebarOpen] = useState(false);

@@ -2,28 +2,31 @@ import React, { useEffect, useState } from "react";
 import Sidebar from "../../partials/Sidebar";
 import Header from "../../partials/Header";
 import PaginationClassic from "../../components/PaginationClassic";
-import ToursTable from "../../partials/tours/ToursTable";
-import { useNavigate } from "react-router-dom";
+import GuidesTable from "../../partials/guides/GuidesTable";
+import { useNavigate, useParams } from "react-router-dom";
+import GuideDetailsTable from "../../partials/guides/GuideDetailsTable";
+import DropdownEditMenu from "../../components/DropdownEditMenu";
 
-function Tours() {
+function GuidesDetails() {
+  const apiURL = import.meta.env.VITE_BASE_URL;
+  const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  // List in display
+  const { id } = useParams();
   const [list, setList] = useState([]);
-  // handle pagination
+  const [guideDetails, setGuideDetails] = useState(null);
+
   const [currentPage, setCurrentPage] = useState(1);
-  // tour cycles
+
   const [ongoing, setOngoing] = useState([]);
   const [ongoingCount, setOngoingCount] = useState(null);
   const [upcoming, setUpcoming] = useState([]);
   const [upcomingCount, setUpcomingCount] = useState(null);
   const [completed, setCompleted] = useState([]);
   const [completedCount, setCompletedCount] = useState(null);
+  const [cancelled, setCancelled] = useState([]);
+  const [cancelledCount, setCancelledCount] = useState(null);
   const [selectedCycle, setSelectedCycle] = useState("ongoing");
-
-  const handleCreateTourBtnClick = () => {
-    navigate("/tours/create");
-  };
 
   const handleCycleSelection = (e) => {
     e.preventDefault();
@@ -37,10 +40,8 @@ function Tours() {
     setCurrentPage(1);
   };
 
-  const fetchTours = () => {
-    const apiURL = import.meta.env.VITE_BASE_URL;
-    const token = localStorage.getItem("token");
-    fetch(`${apiURL}/api/v1/tours/?page=${currentPage}&perpage=10`, {
+  const getGuideDetails = () => {
+    fetch(`${apiURL}/api/v1/users/guide/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -49,21 +50,25 @@ function Tours() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data?.response);
+        console.log("Guide details: ", data?.response);
+        setGuideDetails(data?.response?.guide);
         setOngoing(data?.response?.tours?.ongoing);
-        setOngoingCount(data?.response?.counts?.ongoing);
+        setOngoingCount(data?.response?.tourCounts?.ongoing);
         setUpcoming(data?.response?.tours?.upcoming);
-        setUpcomingCount(data?.response?.counts?.upcoming);
+        setUpcomingCount(data?.response?.tourCounts?.upcoming);
         setCompleted(data?.response?.tours?.completed);
-        setCompletedCount(data?.response?.counts?.completed);
+        setCompletedCount(data?.response?.tourCounts?.completed);
+        setCancelled(data?.response?.tours?.cancelled);
+        setCancelledCount(data?.response?.tourCounts?.cancelled);
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => {
+        console.error("Error fetching guide details:", error);
+      });
   };
 
-  // fetch tours
   useEffect(() => {
-    fetchTours();
-  }, []);
+    getGuideDetails();
+  }, [id]);
 
   useEffect(() => {
     setList(
@@ -74,8 +79,6 @@ function Tours() {
         : ongoing
     );
   }, [selectedCycle, ongoing, upcoming, completed]);
-
-  console.log("selectedCycle: ", selectedCycle);
 
   return (
     <div className="flex h-[100dvh] overflow-hidden">
@@ -90,31 +93,94 @@ function Tours() {
         <main className="grow">
           <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-[96rem] mx-auto">
             {/* Page header */}
-            <div className="sm:flex sm:justify-between sm:items-center mb-8">
-              {/* Left: Title */}
-              <div className="mb-4 sm:mb-0">
-                <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
-                  Tours
-                </h1>
-              </div>
-
-              {/* Right: Actions */}
-              <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-                {/* Add tour button */}
-                <button
-                  onClick={handleCreateTourBtnClick}
-                  className="btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white cursor-pointer"
-                >
-                  <svg
-                    className="fill-current shrink-0 xs:hidden"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
+            <div className="sm:flex sm:justify-between sm:items-center mb-5">
+              {/* Title */}
+              <div className="grid grid-cols-1 sm:grid-cols-5 w-full border-b border-gray-200 dark:border-gray-700/60 pb-2 mb-4 gap-4">
+                <div className="flex items-center gap-2">
+                  {/* back btn */}
+                  <button
+                    onClick={() => navigate("/guides")}
+                    className="btn cursor-pointer"
                   >
-                    <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z" />
-                  </svg>
-                  <span className="max-xs:sr-only">Add New Tour</span>
-                </button>
+                    <svg
+                      className="inline-block w-6 h-6 text-gray-400 dark:text-gray-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M11 17l-5-5m0 0l5-5m-5 5h16"
+                      />
+                    </svg>
+                  </button>
+                  <div>
+                    <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
+                      {guideDetails?.full_name}
+                    </h1>
+                    <h2>{guideDetails?.identity_code}</h2>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center text-center">
+                  <div>
+                    <div className="text-gray-500">Gender</div>
+                    <div className="capitalize text-gray-800 dark:text-gray-100 font-semibold">
+                      {guideDetails?.gender}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center text-center">
+                  <div>
+                    <div className="text-gray-500">Nationality</div>
+                    <div className="capitalize text-gray-800 dark:text-gray-100 font-semibold">
+                      {guideDetails?.nationality}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center text-center">
+                  <div>
+                    <div className="text-gray-500">Phone Number</div>
+                    <div className="capitalize text-gray-800 dark:text-gray-100 font-semibold">
+                      {guideDetails?.phone_number}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end items-center">
+                  <DropdownEditMenu
+                    align="right"
+                    rotate={true}
+                    className={`relative `}
+                  >
+                    <li>
+                      <button
+                        onClick={() => {
+                          console.log("edit clicked");
+                        }}
+                        className="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex py-1 px-3 w-full cursor-pointer"
+                        href="#0"
+                      >
+                        Edit
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        onClick={() => {
+                          console.log("remove clicked");
+                        }}
+                        className="font-medium text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 flex py-1 px-3 w-full cursor-pointer"
+                        href="#0"
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  </DropdownEditMenu>
+                </div>
               </div>
             </div>
 
@@ -173,7 +239,7 @@ function Tours() {
             </div>
 
             {/* Table */}
-            <ToursTable list={list} />
+            <GuideDetailsTable list={list} />
 
             {/* Pagination */}
             <div className="mt-8">
@@ -220,4 +286,4 @@ function Tours() {
   );
 }
 
-export default Tours;
+export default GuidesDetails;

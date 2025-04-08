@@ -23,6 +23,8 @@ function CreateTourForm({
   newParticipantDetails,
   setNewParticipantDetails,
   addNewParticipant,
+  assignParticipantModalOpen,
+  setAssignParticipantModalOpen,
 }) {
   const [isCreateForm, setIsCreateForm] = useState(false);
   const [image, setImage] = useState(null);
@@ -30,9 +32,6 @@ function CreateTourForm({
   const [date, setDate] = useState(null);
   const [newsletters, setNewsletters] = useState([]);
   const [bookingDetails, setBookingDetails] = useState(null);
-
-  const [assignParticipantModalOpen, setAssignParticipantModalOpen] =
-    useState(false);
 
   const [assignNewsletterModalOpen, setAssignNewsletterModalOpen] =
     useState(false);
@@ -250,7 +249,8 @@ function CreateTourForm({
                   <input
                     id="file-upload"
                     type="file"
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    disabled
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:opacity-0 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
                     accept="image/png, image/jpeg, application/pdf"
                     onChange={(e) => {
                       const file = e.target.files[0];
@@ -533,27 +533,6 @@ function CreateTourForm({
                             <div className="text-gray-500">
                               ID: {participant?.identity_code}
                             </div>
-                            {/* <button
-                              onClick={() => {
-                                setParticipantMenuOpen(!participantMenuOpen);
-                              }}
-                              className="btn text-gray-900 dark:text-gray-100"
-                            >
-                              <svg
-                                className="w-4 h-4 fill-current"
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              >
-                                <circle cx="5" cy="12" r="1"></circle>
-                                <circle cx="12" cy="12" r="1"></circle>
-                                <circle cx="19" cy="12" r="1"></circle>
-                              </svg>
-                            </button> */}
                             <DropdownEditMenu
                               align="left"
                               className={`relative ${
@@ -685,7 +664,16 @@ function CreateTourForm({
                       <select
                         id="select-primary-participant"
                         className="form-select w-full px-2 py-2 cursor-pointer disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
-                        // disabled={participants?.length < 2}
+                        disabled={participants?.length < 2}
+                        value={
+                          newParticipantDetails?.primary_participant_id ?? ""
+                        }
+                        onChange={(e) =>
+                          setNewParticipantDetails((prev) => ({
+                            ...prev,
+                            primary_participant_id: e.target.value,
+                          }))
+                        }
                       >
                         <option value="" disabled hidden>
                           Select
@@ -694,9 +682,9 @@ function CreateTourForm({
                           <option
                             className="dark:bg-gray-800 cursor-pointer"
                             key={idx}
-                            value={participant?.id}
+                            value={participant?.uid}
                           >
-                            {participant.name}
+                            {participant?.full_name}
                           </option>
                         ))}
                       </select>
@@ -770,7 +758,7 @@ function CreateTourForm({
                         </label>
                         <input
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          accept=".xlsx, .xls, .csv"
+                          accept="application/pdf"
                           type="file"
                           id="bookingDetails"
                           onChange={(e) => {
@@ -797,6 +785,8 @@ function CreateTourForm({
                       className="btn border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-gray-800 dark:text-gray-300 cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
+                        setNewParticipantDetails({});
+                        setBookingDetails(null);
                         setAssignParticipantModalOpen(false);
                       }}
                     >

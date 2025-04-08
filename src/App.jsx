@@ -8,11 +8,12 @@ import Dashboard from "./pages/Dashboard";
 import Tours from "./pages/tours/Tours";
 import PageNotFound from "./pages/utility/PageNotFound";
 import Signin from "./pages/Signin";
-import Guides from "./pages/Guides";
+import Guides from "./pages/guides/Guides";
 import SendNotifications from "./pages/SendNotifications";
 import ProtectedRoute from "./utils/ProtectedRoute";
 import CreateTour from "./pages/tours/CreateTour";
 import ToursDetails from "./pages/tours/ToursDetails";
+import GuidesDetails from "./pages/guides/GuidesDetails";
 
 function App() {
   const location = useLocation();
@@ -67,6 +68,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Guides />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/guides/:id"
+          element={
+            <ProtectedRoute>
+              <GuidesDetails />
             </ProtectedRoute>
           }
         />

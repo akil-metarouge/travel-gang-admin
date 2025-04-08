@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Transition from "../utils/Transition";
 
-function DropdownEditMenu({ children, align, ...rest }) {
+function DropdownEditMenu({ children, align, rotate, ...rest }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const trigger = useRef(null);
@@ -47,11 +47,19 @@ function DropdownEditMenu({ children, align, ...rest }) {
         aria-expanded={dropdownOpen}
       >
         <span className="sr-only">Menu</span>
-        <svg className="w-8 h-8 fill-current" viewBox="0 0 32 32">
-          <circle cx="16" cy="16" r="2" />
-          <circle cx="10" cy="16" r="2" />
-          <circle cx="22" cy="16" r="2" />
-        </svg>
+        {rotate ? (
+          <svg className="w-8 h-8 fill-current rotate-90" viewBox="0 0 32 32">
+            <circle cx="16" cy="16" r="2" />
+            <circle cx="10" cy="16" r="2" />
+            <circle cx="22" cy="16" r="2" />
+          </svg>
+        ) : (
+          <svg className="w-8 h-8 fill-current" viewBox="0 0 32 32">
+            <circle cx="16" cy="16" r="2" />
+            <circle cx="10" cy="16" r="2" />
+            <circle cx="22" cy="16" r="2" />
+          </svg>
+        )}
       </button>
       <Transition
         show={dropdownOpen}

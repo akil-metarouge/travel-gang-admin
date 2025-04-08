@@ -1,54 +1,50 @@
 import React, { useState, useEffect } from "react";
 import GuidesTableItem from "./GuidesTableItem";
+import { useNavigate } from "react-router-dom";
 
 function GuidesTable() {
-  const guides = [
-    {
-      name: "asdf",
-      id: "124123",
-      ongoing: "Grand trip Australia",
-      upcoming: 4,
-      completed: 2,
-    },
-    {
-      name: "qwer",
-      id: "234234",
-      ongoing: "Trip Australia",
-      upcoming: 3,
-      completed: 1,
-    },
-    {
-      name: "zxcv",
-      id: "345345",
-      ongoing: "Trip Australia",
-      upcoming: 2,
-      completed: 1,
-    },
-    {
-      name: "rtyu",
-      id: "456456",
-      ongoing: "Trip Australia",
-      upcoming: 1,
-      completed: 0,
-    },
-    {
-      name: "ghjk",
-      id: "567567",
-      ongoing: "Trip Australia",
-      upcoming: 0,
-      completed: 0,
-    },
-  ];
+  const apiURL = import.meta.env.VITE_BASE_URL;
+  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
 
+  const [page, setPage] = useState(1);
+  const [searchText, setSearchText] = useState("");
   const [list, setList] = useState([]);
+
+  const getGuidesList = async () => {
+    try {
+      const response = await fetch(
+        `${apiURL}/api/v1/users/list?page=${page}&perpage=10&role=guide&search=${
+          searchText || ""
+        }`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        // console.log("Guides list:", data?.response);
+        setList(data.response?.date);
+      } else {
+        console.error("Error fetching guides:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching guides:", error);
+      return [];
+    }
+  };
 
   const handleGuideMenuBtnClick = () => {
     console.log("clicked");
   };
 
   useEffect(() => {
-    setList(guides);
-  }, []);
+    getGuidesList();
+  }, [page, searchText]);
 
   return (
     <div className="bg-white dark:bg-gray-800 shadow-xs rounded-xl relative">
@@ -80,16 +76,17 @@ function GuidesTable() {
               </tr>
             </thead>
             {/* Table body */}
-            {list.map((tour, idx) => {
+            {list?.map((guide, idx) => {
               return (
                 <GuidesTableItem
-                  key={tour.id}
+                  key={idx}
                   idx={idx}
-                  id={tour.id}
-                  name={tour.name}
-                  ongoing={tour.ongoing}
-                  upcoming={tour.upcoming}
-                  completed={tour.completed}
+                  uid={guide?.uid}
+                  id={guide?.identity_code}
+                  name={guide?.full_name}
+                  ongoing={guide?.ongoing}
+                  upcoming={guide?.upcoming}
+                  completed={guide?.completed}
                   handleGuideMenuBtnClick={handleGuideMenuBtnClick}
                 />
               );

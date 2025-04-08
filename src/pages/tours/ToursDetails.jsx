@@ -27,6 +27,8 @@ function ToursDetails() {
   //participants states
   const [participants, setParticipants] = useState([]);
   const [newParticipantDetails, setNewParticipantDetails] = useState([]);
+  const [assignParticipantModalOpen, setAssignParticipantModalOpen] =
+    useState(false);
 
   const getTourDetails = () => {
     fetch(`${apiURL}/api/v1/tours/${id}/admin`, {
@@ -169,6 +171,31 @@ function ToursDetails() {
   // participants functions
   const addNewParticipant = () => {
     console.log("New participant details: ", newParticipantDetails);
+
+    const { primary_participant_id, is_primary } = newParticipantDetails;
+    const newParticipant = {
+      ...newParticipantDetails,
+      primary_participant_id: !is_primary ? primary_participant_id : null,
+    };
+
+    fetch(`${apiURL}/api/v1/tours/${tourDetails?.uid}/participant`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(newParticipant),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Participant added successfully:", data?.response);
+        // setAssignParticipantModalOpen(false);
+        // setNewParticipantDetails({});
+        // getTourDetails();
+      })
+      .catch((error) => {
+        console.error("Error adding participant:", error);
+      });
   };
 
   useEffect(() => {
@@ -280,7 +307,7 @@ function ToursDetails() {
             {/* Page header */}
             <div className="sm:flex sm:justify-between sm:items-center mb-4">
               {/* Left: Title */}
-              <div className="mb-4 sm:mb-0 flex">
+              <div className="mb-4 sm:mb-0 flex items-center">
                 {/* back btn */}
                 <button
                   onClick={() => navigate("/tours")}
@@ -345,6 +372,8 @@ function ToursDetails() {
               newParticipantDetails={newParticipantDetails}
               setNewParticipantDetails={setNewParticipantDetails}
               addNewParticipant={addNewParticipant}
+              assignParticipantModalOpen={assignParticipantModalOpen}
+              setAssignParticipantModalOpen={setAssignParticipantModalOpen}
             />
           </div>
         </main>
