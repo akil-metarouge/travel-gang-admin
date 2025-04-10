@@ -6,6 +6,8 @@ import ToursTable from "../../partials/tours/ToursTable";
 import { useNavigate } from "react-router-dom";
 
 function Tours() {
+  const apiURL = import.meta.env.VITE_BASE_URL;
+  const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // List in display
@@ -38,8 +40,6 @@ function Tours() {
   };
 
   const fetchTours = () => {
-    const apiURL = import.meta.env.VITE_BASE_URL;
-    const token = localStorage.getItem("token");
     fetch(`${apiURL}/api/v1/tours/?page=${currentPage}&perpage=10`, {
       method: "GET",
       headers: {

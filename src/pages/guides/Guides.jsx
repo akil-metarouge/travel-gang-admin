@@ -1,15 +1,91 @@
-import React, { useState } from "react";
-
+import React, { useEffect, useState } from "react";
 import Sidebar from "../../partials/Sidebar";
 import Header from "../../partials/Header";
 import SearchForm from "../../partials/actions/SearchForm";
 import PaginationClassic from "../../components/PaginationClassic";
 import GuidesTable from "../../partials/guides/GuidesTable";
 import ModalBasic from "../../components/ModalBasic";
+import { set } from "date-fns";
 
 function Guides() {
+  const apiURL = import.meta.env.VITE_BASE_URL;
+  const token = localStorage.getItem("token");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [addGuideModalOpen, setAddGuideModalOpen] = useState(false);
+  const [nationalities, setNationalities] = useState([]);
+
+  const [page, setPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [list, setList] = useState([]);
+  const [searchText, setSearchText] = useState("");
+
+  const [guideDetails, setGuideDetails] = useState(null);
+
+  const getGuidesList = async () => {
+    try {
+      const response = await fetch(
+        `${apiURL}/api/v1/users/list?page=${page}&perpage=10&role=guide&search=${
+          searchText || ""
+        }`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        console.log("Guides list:", data?.response);
+        setList(data.response?.date);
+        setTotalItems(data.response?.meta?.total);
+      } else {
+        console.error("Error fetching guides:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching guides:", error);
+      return [];
+    }
+  };
+
+  const addNewGuide = () => {
+    fetch(`${apiURL}/api/v1/users/add-guide`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(guideDetails),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data?.response) {
+          console.log("Guide created successfully:", data?.response);
+          setGuideDetails(null);
+          setAddGuideModalOpen(false);
+        }
+      })
+      .catch((error) => {
+        console.error("Error creating guide:", error);
+      });
+  };
+
+  useEffect(() => {
+    getGuidesList();
+  }, [page, searchText]);
+
+  useEffect(() => {
+    fetch("https://restcountries.com/v3.1/all")
+      .then((response) => response.json())
+      .then((data) => {
+        // console.log(data);
+        setNationalities(data.map((nation) => nation?.name?.common).sort());
+      })
+      .catch((error) => {
+        console.error("Error fetching guide details:", error);
+      });
+  }, [addGuideModalOpen]);
 
   return (
     <div className="flex h-[100dvh] overflow-hidden">
@@ -35,7 +111,11 @@ function Guides() {
               {/* Right: Actions */}
               <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
                 {/* Search form */}
-                <SearchForm placeholder="Search Guide" />
+                <SearchForm
+                  placeholder="Search Guide"
+                  searchText={searchText}
+                  setSearchText={setSearchText}
+                />
                 {/* Create invoice button */}
                 <button
                   onClick={(e) => {
@@ -57,7 +137,7 @@ function Guides() {
                 <ModalBasic
                   id="guide-modal"
                   modalOpen={addGuideModalOpen}
-                  setModalOpen={setAddGuideModalOpen}
+                  // setModalOpen={setAddGuideModalOpen}
                   title="Add Guide"
                 >
                   {/* Modal content */}
@@ -74,7 +154,13 @@ function Guides() {
                           id="name"
                           className="form-input w-full px-2 py-2"
                           type="text"
-                          required
+                          value={guideDetails?.full_name ?? ""}
+                          onChange={(e) => {
+                            setGuideDetails({
+                              ...guideDetails,
+                              full_name: e.target.value,
+                            });
+                          }}
                         />
                       </div>
                       <div>
@@ -86,15 +172,36 @@ function Guides() {
                         </label>
                         <select
                           id="gender"
-                          className="form-select w-full px-2 py-2 cursor-pointer"
+                          className="form-select capitalize w-full px-2 py-2 cursor-pointer"
+                          value={guideDetails?.gender ?? ""}
+                          onChange={(e) => {
+                            setGuideDetails({
+                              ...guideDetails,
+                              gender: e.target.value,
+                            });
+                          }}
                         >
                           <option value="" disabled hidden>
                             Select
                           </option>
-                          <option value="male">Male</option>
-                          <option value="female">Female</option>
-                          <option value="other">Other</option>
-                          <option value="other">Prefer not to say</option>
+                          <option
+                            className="dark:bg-gray-800 cursor-pointer"
+                            value="male"
+                          >
+                            Male
+                          </option>
+                          <option
+                            className="dark:bg-gray-800 cursor-pointer"
+                            value="female"
+                          >
+                            Female
+                          </option>
+                          <option
+                            className="dark:bg-gray-800 cursor-pointer"
+                            value="other"
+                          >
+                            Other
+                          </option>
                         </select>
                       </div>
                       <div>
@@ -108,7 +215,13 @@ function Guides() {
                           id="phoneNumber"
                           className="form-input w-full px-2 py-2"
                           type="tel"
-                          required
+                          value={guideDetails?.phone_number ?? ""}
+                          onChange={(e) => {
+                            setGuideDetails({
+                              ...guideDetails,
+                              phone_number: e.target.value,
+                            });
+                          }}
                         />
                       </div>
                       <div>
@@ -121,15 +234,33 @@ function Guides() {
                         <select
                           id="nationality"
                           className="form-select w-full px-2 py-2 cursor-pointer"
+                          value={guideDetails?.nationality ?? ""}
+                          onChange={(e) => {
+                            setGuideDetails({
+                              ...guideDetails,
+                              nationality: e.target.value,
+                            });
+                          }}
                         >
-                          <option value="" disabled hidden>
+                          <option
+                            className="dark:bg-gray-800 cursor-pointer"
+                            value=""
+                            disabled
+                            hidden
+                          >
                             Select
                           </option>
-                          <option value="australia">Australia</option>
-                          <option value="canada">Canada</option>
-                          <option value="france">France</option>
-                          <option value="germany">Germany</option>
-                          <option value="ireland">Ireland</option>
+                          {nationalities?.map((nation) => {
+                            return (
+                              <option
+                                className="dark:bg-gray-800 cursor-pointer"
+                                key={nation}
+                                value={nation}
+                              >
+                                {nation}
+                              </option>
+                            );
+                          })}
                         </select>
                       </div>
                       <div>
@@ -143,7 +274,13 @@ function Guides() {
                           id="guide-id"
                           className="form-input w-full px-2 py-2"
                           type="text"
-                          required
+                          value={guideDetails?.identity_code ?? ""}
+                          onChange={(e) => {
+                            setGuideDetails({
+                              ...guideDetails,
+                              identity_code: e.target.value,
+                            });
+                          }}
                         />
                       </div>
                     </div>
@@ -155,12 +292,19 @@ function Guides() {
                         className="btn border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-gray-800 dark:text-gray-300 cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
+                          setGuideDetails(null);
                           setAddGuideModalOpen(false);
                         }}
                       >
                         Cancel
                       </button>
-                      <button className="btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white cursor-pointer">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addNewGuide();
+                        }}
+                        className="btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white cursor-pointer"
+                      >
                         Add
                       </button>
                     </div>
@@ -170,11 +314,15 @@ function Guides() {
             </div>
 
             {/* Table */}
-            <GuidesTable />
+            <GuidesTable list={list} />
 
             {/* Pagination */}
             <div className="mt-8">
-              <PaginationClassic />
+              <PaginationClassic
+                firstIndex={totalItems === 0 ? 0 : page * 10 - 9}
+                lastIndex={totalItems < page * 10 ? totalItems : page * 10}
+                total={totalItems}
+              />
             </div>
           </div>
         </main>

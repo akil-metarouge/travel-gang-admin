@@ -60,7 +60,7 @@ function Signin() {
             <div className="flex-1">
               <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
                 <svg
-                  className="fill-violet-500"
+                  className="fill-pink-500"
                   xmlns="http://www.w3.org/2000/svg"
                   width={32}
                   height={32}

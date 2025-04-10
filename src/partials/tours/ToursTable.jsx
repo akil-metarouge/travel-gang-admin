@@ -1,9 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import ToursTableItem from "./ToursTableItem";
-
-import Image01 from "../../images/icon-01.svg";
-import Image02 from "../../images/icon-02.svg";
-import Image03 from "../../images/icon-03.svg";
 
 function ToursTable({ list }) {
   return (

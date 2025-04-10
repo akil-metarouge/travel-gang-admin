@@ -10,7 +10,7 @@ function GuideDetailsTableItem(props) {
             <div className="w-10 h-10 shrink-0 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-full mr-2 sm:mr-3">
               <img
                 className="ml-1"
-                src={props.image}
+                src={props?.image}
                 width="20"
                 height="20"
                 alt={props.name}

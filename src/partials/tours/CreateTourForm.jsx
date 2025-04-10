@@ -424,7 +424,7 @@ function CreateTourForm({
                                   }}
                                   className={`w-full h-full text-left py-3 px-4 rounded-lg bg-white dark:bg-gray-800 border${
                                     guide?.selected
-                                      ? "-2 border-violet-400 dark:border-violet-500"
+                                      ? "-2 border-pink-400 dark:border-pink-500"
                                       : " border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600"
                                   } shadow-xs transition cursor-pointer`}
                                 >
@@ -432,7 +432,7 @@ function CreateTourForm({
                                     <div
                                       className={`w-4 h-4 border-${
                                         guide?.selected
-                                          ? "4 bg-white border-violet-500"
+                                          ? "4 bg-white border-pink-500"
                                           : "2 border-gray-300 dark:border-gray-600"
                                       } rounded-full mr-3`}
                                     ></div>

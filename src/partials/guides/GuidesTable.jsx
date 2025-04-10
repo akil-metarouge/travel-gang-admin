@@ -1,50 +1,10 @@
 import React, { useState, useEffect } from "react";
 import GuidesTableItem from "./GuidesTableItem";
-import { useNavigate } from "react-router-dom";
 
-function GuidesTable() {
-  const apiURL = import.meta.env.VITE_BASE_URL;
-  const token = localStorage.getItem("token");
-  const navigate = useNavigate();
-
-  const [page, setPage] = useState(1);
-  const [searchText, setSearchText] = useState("");
-  const [list, setList] = useState([]);
-
-  const getGuidesList = async () => {
-    try {
-      const response = await fetch(
-        `${apiURL}/api/v1/users/list?page=${page}&perpage=10&role=guide&search=${
-          searchText || ""
-        }`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const data = await response.json();
-      if (response.ok) {
-        // console.log("Guides list:", data?.response);
-        setList(data.response?.date);
-      } else {
-        console.error("Error fetching guides:", data.message);
-      }
-    } catch (error) {
-      console.error("Error fetching guides:", error);
-      return [];
-    }
-  };
-
+function GuidesTable({ list }) {
   const handleGuideMenuBtnClick = () => {
     console.log("clicked");
   };
-
-  useEffect(() => {
-    getGuidesList();
-  }, [page, searchText]);
 
   return (
     <div className="bg-white dark:bg-gray-800 shadow-xs rounded-xl relative">

@@ -62,8 +62,6 @@ function CreateTour() {
         if (data?.response) {
           console.log("Tour created successfully:", data?.response);
           navigate("/tours/" + data?.response?.uid);
-        } else {
-          console.error("Error creating tour:", data.message);
         }
       })
       .catch((error) => {

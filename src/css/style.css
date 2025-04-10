@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=fallback');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=fallback");
 
-@import 'tailwindcss';
-@import './additional-styles/utility-patterns.css' layer(components);
+@import "tailwindcss";
+@import "./additional-styles/utility-patterns.css" layer(components);
 
 @plugin "@tailwindcss/forms" {
   strategy: base;
@@ -84,6 +84,9 @@
   --color-yellow-800: #816316;
   --color-yellow-900: #4f3d0e;
   --color-yellow-950: #342809;
+
+  /* --color-pink-500: #ef1865;
+  --color-blue-300: #26b8dbbf; */
 
   --font-inter: "Inter", "sans-serif";
 
