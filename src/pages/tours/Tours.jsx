@@ -4,10 +4,12 @@ import Header from "../../partials/Header";
 import PaginationClassic from "../../components/PaginationClassic";
 import ToursTable from "../../partials/tours/ToursTable";
 import { useNavigate } from "react-router-dom";
+import { useStatus } from "../../utils/StatusContext";
 
 function Tours() {
   const apiURL = import.meta.env.VITE_BASE_URL;
   const token = localStorage.getItem("token");
+  const { setStatus } = useStatus();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // List in display
@@ -57,7 +59,13 @@ function Tours() {
         setCompleted(data?.response?.tours?.completed);
         setCompletedCount(data?.response?.counts?.completed);
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => {
+        console.error("Error:", error);
+        setStatus({
+          type: "error",
+          message: error?.message || "Something went wrong",
+        });
+      });
   };
 
   // fetch tours

@@ -7,10 +7,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import GuideDetailsTable from "../../partials/guides/GuideDetailsTable";
 import DropdownEditMenu from "../../components/DropdownEditMenu";
 import ModalBasic from "../../components/ModalBasic";
+import { useStatus } from "../../utils/StatusContext";
 
 function GuidesDetails() {
   const apiURL = import.meta.env.VITE_BASE_URL;
   const token = localStorage.getItem("token");
+  const { setStatus } = useStatus();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { id } = useParams();
@@ -67,6 +69,10 @@ function GuidesDetails() {
       })
       .catch((error) => {
         console.error("Error fetching guide details:", error);
+        setStatus({
+          type: "error",
+          message: error?.message || "Something went wrong",
+        });
       });
   };
 

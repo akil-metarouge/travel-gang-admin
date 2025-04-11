@@ -6,10 +6,12 @@ import PaginationClassic from "../../components/PaginationClassic";
 import GuidesTable from "../../partials/guides/GuidesTable";
 import ModalBasic from "../../components/ModalBasic";
 import { set } from "date-fns";
+import { useStatus } from "../../utils/StatusContext";
 
 function Guides() {
   const apiURL = import.meta.env.VITE_BASE_URL;
   const token = localStorage.getItem("token");
+  const { setStatus } = useStatus();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [addGuideModalOpen, setAddGuideModalOpen] = useState(false);
   const [nationalities, setNationalities] = useState([]);
@@ -45,6 +47,10 @@ function Guides() {
       }
     } catch (error) {
       console.error("Error fetching guides:", error);
+      setStatus({
+        type: "error",
+        message: error?.message || "Something went wrong",
+      });
       return [];
     }
   };
@@ -62,12 +68,18 @@ function Guides() {
       .then((data) => {
         if (data?.response) {
           console.log("Guide created successfully:", data?.response);
+          setStatus({ type: "success", message: "New Guide Added" });
           setGuideDetails(null);
           setAddGuideModalOpen(false);
+          getGuidesList();
         }
       })
       .catch((error) => {
         console.error("Error creating guide:", error);
+        setStatus({
+          type: "error",
+          message: error?.message || "Something went wrong",
+        });
       });
   };
 

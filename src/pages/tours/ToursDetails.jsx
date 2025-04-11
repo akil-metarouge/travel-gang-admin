@@ -3,10 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../../partials/Sidebar";
 import Header from "../../partials/Header";
 import CreateTourForm from "../../partials/tours/CreateTourForm";
+import { useStatus } from "../../utils/StatusContext";
 
 function ToursDetails() {
   const apiURL = import.meta.env.VITE_BASE_URL;
   const token = localStorage.getItem("token");
+  const { setStatus } = useStatus();
   const navigate = useNavigate();
   const { id } = useParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -45,6 +47,10 @@ function ToursDetails() {
       })
       .catch((error) => {
         console.error("Error fetching tour details:", error);
+        setStatus({
+          type: "error",
+          message: error?.message || "Something went wrong",
+        });
       });
   };
 
@@ -65,11 +71,16 @@ function ToursDetails() {
       .then((response) => response.json())
       .then((data) => {
         console.log("Tour updated successfully:", data?.response);
+        setStatus({ type: "success", message: "Tour Updated" });
         // getTourDetails();
         navigate(-1);
       })
       .catch((error) => {
         console.error("Error updating tour:", error);
+        setStatus({
+          type: "error",
+          message: error?.message || "Something went wrong",
+        });
       });
   };
 
@@ -98,33 +109,32 @@ function ToursDetails() {
     }
     console.log("Updated guides:", updatedGuides);
 
-    try {
-      fetch(`${apiURL}/api/v1/tours/${tourDetails?.uid}/assign-guides`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          guide_ids: updatedGuides,
-        }),
+    fetch(`${apiURL}/api/v1/tours/${tourDetails?.uid}/assign-guides`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        guide_ids: updatedGuides,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data?.response) {
+          console.log("Guides updated successfully:", data?.response);
+          setStatus({ type: "success", message: "Guides Assigned" });
+          setAssignGuideModalOpen(false);
+          getTourDetails();
+        }
       })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data?.response) {
-            console.log("Guides updated successfully:", data?.response);
-            setAssignGuideModalOpen(false);
-            getTourDetails();
-          } else {
-            console.error("Error updating guides:", data.message);
-          }
-        })
-        .catch((error) => {
-          console.error("Error updating guides:", error);
+      .catch((error) => {
+        console.error("Error updating guides:", error);
+        setStatus({
+          type: "error",
+          message: error?.message || "Something went wrong",
         });
-    } catch (error) {
-      console.error("Error:", error);
-    }
+      });
   };
 
   const getGuidesList = async (page, searchText) => {
@@ -164,6 +174,10 @@ function ToursDetails() {
       return guidesForList || [];
     } catch (error) {
       console.error("Error fetching guides:", error);
+      setStatus({
+        type: "error",
+        message: error?.message || "Something went wrong",
+      });
       return [];
     }
   };
@@ -189,12 +203,17 @@ function ToursDetails() {
       .then((response) => response.json())
       .then((data) => {
         console.log("Participant added successfully:", data?.response);
+        setStatus({ type: "success", message: "New Participant Added" });
         // setAssignParticipantModalOpen(false);
         // setNewParticipantDetails({});
         // getTourDetails();
       })
       .catch((error) => {
         console.error("Error adding participant:", error);
+        setStatus({
+          type: "error",
+          message: error?.message || "Something went wrong",
+        });
       });
   };
 

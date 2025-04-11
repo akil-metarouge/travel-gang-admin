@@ -40,7 +40,7 @@ function Signin() {
           localStorage.setItem("user", JSON.stringify(data?.response?.user));
           localStorage.setItem("token", data?.response?.token);
           setError("");
-          navigate("/"); // Redirect to dashboard
+          navigate("/");
         } else {
           setError(data.message);
         }

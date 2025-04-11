@@ -4,10 +4,12 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../../partials/Sidebar";
 import Header from "../../partials/Header";
 import CreateTourForm from "../../partials/tours/CreateTourForm";
+import { useStatus } from "../../utils/StatusContext";
 
 function CreateTour() {
   const apiURL = import.meta.env.VITE_BASE_URL;
   const token = localStorage.getItem("token");
+  const { setStatus } = useStatus();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tourDetails, setTourDetails] = useState({});
   const navigate = useNavigate();
@@ -61,11 +63,16 @@ function CreateTour() {
       .then((data) => {
         if (data?.response) {
           console.log("Tour created successfully:", data?.response);
+          setStatus({ type: "success", message: "New Tour Created" });
           navigate("/tours/" + data?.response?.uid);
         }
       })
       .catch((error) => {
         console.error("Error creating tour:", error);
+        setStatus({
+          type: "error",
+          message: error?.message || "Something went wrong",
+        });
       });
     // }
   };
