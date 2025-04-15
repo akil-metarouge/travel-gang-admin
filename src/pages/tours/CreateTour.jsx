@@ -104,6 +104,52 @@ function CreateTour() {
     }
   };
 
+  const handleUploadCSV = async (file) => {
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch(`${apiURL}/api/v1/bookings/import`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        // Sign out
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        navigate("/signin");
+        return; // stop further execution
+      }
+
+      const data = await response.json();
+
+      if (data?.response) {
+        console.log("CSV uploaded successfully:", data.response);
+        setStatus({ type: "success", message: "CSV Uploaded Successfully" });
+        navigate("/tours/" + data?.response?.uid);
+      } else {
+        console.error("Error uploading CSV:", data.message);
+        setStatus({
+          type: "error",
+          message: data?.message || "Something went wrong",
+        });
+      }
+    } catch (error) {
+      console.error("Error uploading CSV:", error);
+      setStatus({
+        type: "error",
+        message: error?.message || "Something went wrong",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isLoading) {
       console.log("New image URL:", newImageUrl);
@@ -163,6 +209,26 @@ function CreateTour() {
 
               {/* Right: Actions */}
               <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+                <div>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const fileInput = document.createElement("input");
+                      fileInput.type = "file";
+                      fileInput.accept = ".csv";
+                      fileInput.onchange = (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          handleUploadCSV(file);
+                        }
+                      };
+                      fileInput.click();
+                    }}
+                    className="btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white w-30 cursor-pointer"
+                  >
+                    Upload CSV
+                  </button>
+                </div>
                 {/* Create tour button */}
                 <button
                   onClick={handleCreate}

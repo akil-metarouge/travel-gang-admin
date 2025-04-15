@@ -25,6 +25,7 @@ function CreateTourForm({
   addNewParticipant,
   assignParticipantModalOpen,
   setAssignParticipantModalOpen,
+  handleUploadCSV,
 }) {
   const [isCreateForm, setIsCreateForm] = useState(false);
   const [image, setImage] = useState(null);
@@ -529,12 +530,27 @@ function CreateTourForm({
                       >
                         + Assign Participant
                       </button>
-                      <button className="btn bg-gray-300 dark:bg-gray-700 cursor-pointer hover:bg-gray-400 dark:hover:bg-gray-600">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const fileInput = document.createElement("input");
+                          fileInput.type = "file";
+                          fileInput.accept = ".csv";
+                          fileInput.onchange = (e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              handleUploadCSV(file);
+                            }
+                          };
+                          fileInput.click();
+                        }}
+                        className="btn bg-gray-300 dark:bg-gray-700 cursor-pointer hover:bg-gray-400 dark:hover:bg-gray-600"
+                      >
                         Upload CSV
                       </button>
                     </div>
                     <div
-                      className={`grid h-90 pb-20 overflow-y-auto scrollbar-thin`}
+                      className={`grid max-h-90 pb-20 overflow-y-auto scrollbar-thin`}
                     >
                       {participants?.map((participant, idx) => (
                         <div
@@ -610,14 +626,28 @@ function CreateTourForm({
                           + Assign Participant
                         </button>
                       </div>
-                      <div>
-                        <button
-                          disabled={isCreateForm}
-                          className="btn w-60 bg-gray-300 dark:bg-gray-700 cursor-pointer hover:bg-gray-400 dark:hover:bg-gray-600 disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
-                        >
-                          Upload CSV
-                        </button>
-                      </div>
+                      {!isCreateForm && (
+                        <div>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              const fileInput = document.createElement("input");
+                              fileInput.type = "file";
+                              fileInput.accept = ".csv";
+                              fileInput.onchange = (e) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                  handleUploadCSV(file);
+                                }
+                              };
+                              fileInput.click();
+                            }}
+                            className="btn w-60 bg-gray-300 dark:bg-gray-700 cursor-pointer hover:bg-gray-400 dark:hover:bg-gray-600 disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
+                          >
+                            Upload CSV
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -642,11 +672,11 @@ function CreateTourForm({
                         id="name"
                         className="form-input w-full px-2 py-2"
                         type="text"
-                        value={newParticipantDetails?.full_name ?? ""}
+                        value={newParticipantDetails?.name ?? ""}
                         onChange={(e) => {
                           setNewParticipantDetails((prev) => ({
                             ...prev,
-                            full_name: e.target.value,
+                            name: e.target.value,
                           }));
                         }}
                       />

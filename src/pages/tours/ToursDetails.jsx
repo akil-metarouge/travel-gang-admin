@@ -11,7 +11,10 @@ function ToursDetails() {
   const token = localStorage.getItem("token");
   const { setStatus } = useStatus();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingForTourDetailsUpdate, setIsLoadingForTourDetailsUpdate] =
+    useState(false);
+  const [isLoadingForCSVUpload, setIsLoadingForCSVUpload] = useState(false);
+
   const { id } = useParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tourDetails, setTourDetails] = useState({});
@@ -106,7 +109,7 @@ function ToursDetails() {
         message: error?.message || "Something went wrong",
       });
     } finally {
-      setIsLoading(false);
+      setIsLoadingForTourDetailsUpdate(false);
     }
   };
 
@@ -146,6 +149,52 @@ function ToursDetails() {
     }
   };
 
+  const handleUploadCSV = async (file) => {
+    setIsLoadingForCSVUpload(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch(`${apiURL}/api/v1/bookings/import`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        // Sign out
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        navigate("/signin");
+        return; // stop further execution
+      }
+
+      const data = await response.json();
+
+      if (data?.response) {
+        console.log("CSV uploaded successfully:", data.response);
+        setStatus({ type: "success", message: "CSV Uploaded Successfully" });
+        navigate("/tours/" + data?.response?.uid);
+      } else {
+        console.error("Error uploading CSV:", data.message);
+        setStatus({
+          type: "error",
+          message: data?.message || "Something went wrong",
+        });
+      }
+    } catch (error) {
+      console.error("Error uploading CSV:", error);
+      setStatus({
+        type: "error",
+        message: error?.message || "Something went wrong",
+      });
+    } finally {
+      setIsLoadingForCSVUpload(false);
+    }
+  };
+
   const handleSave = async () => {
     // exclude image_url from tourDetails
     // const { image_url, itinerary, ...rest } = tourDetails;
@@ -157,9 +206,9 @@ function ToursDetails() {
       const imageUrl = await uploadImage(tourDetails.image);
       console.log("Image URL: ", imageUrl);
       setNewImageUrl(imageUrl);
-      setIsLoading(true);
+      setIsLoadingForTourDetailsUpdate(true);
     } else {
-      setIsLoading(true);
+      setIsLoadingForTourDetailsUpdate(true);
     }
   };
 
@@ -307,9 +356,9 @@ function ToursDetails() {
       .then((data) => {
         console.log("Participant added successfully:", data?.response);
         setStatus({ type: "success", message: "New Participant Added" });
-        // setAssignParticipantModalOpen(false);
-        // setNewParticipantDetails({});
-        // getTourDetails();
+        setAssignParticipantModalOpen(false);
+        setNewParticipantDetails({});
+        getTourDetails();
       })
       .catch((error) => {
         console.error("Error adding participant:", error);
@@ -325,7 +374,7 @@ function ToursDetails() {
   }, [id]);
 
   useEffect(() => {
-    if (isLoading) {
+    if (isLoadingForTourDetailsUpdate) {
       const { itinerary, ...rest } = tourDetails;
       const newTourDetails = { ...rest };
       console.log("Save tour: ", newTourDetails);
@@ -341,7 +390,7 @@ function ToursDetails() {
         updateTourAPICall(newTourDetails);
       }
     }
-  }, [newImageUrl, isLoading]);
+  }, [newImageUrl, setIsLoadingForTourDetailsUpdate]);
 
   // guides actions
   useEffect(() => {
@@ -516,10 +565,13 @@ function ToursDetails() {
               assignParticipantModalOpen={assignParticipantModalOpen}
               setAssignParticipantModalOpen={setAssignParticipantModalOpen}
               newsletters={newsletters}
+              handleUploadCSV={handleUploadCSV}
             />
           </div>
         </main>
-        {isLoading && <PageLoader />}
+        {(isLoadingForTourDetailsUpdate || isLoadingForCSVUpload) && (
+          <PageLoader />
+        )}
       </div>
     </div>
   );
