@@ -53,7 +53,15 @@ function GuidesDetails() {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.status === 401 || response.status === 403) {
+          // Sign out
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          navigate("/signin");
+        }
+        return response.json();
+      })
       .then((data) => {
         console.log("Guide details: ", data?.response);
         setGuideDetails(data?.response?.guide);
@@ -108,7 +116,7 @@ function GuidesDetails() {
   }, [selectedCycle, ongoing, upcoming, completed]);
 
   return (
-    <div className="flex h-[100dvh] overflow-hidden">
+    <div className="flex h-[100dvh] overflow-auto">
       {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 

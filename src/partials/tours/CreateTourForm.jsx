@@ -70,20 +70,28 @@ function CreateTourForm({
   }, []);
 
   useEffect(() => {
-    setImage(tourDetails?.image_url);
-    setItinerary(tourDetails?.itinerary);
-    if (tourDetails?.start_date && tourDetails?.end_date) {
-      const previousSetDate = {
-        from: new Date(tourDetails?.start_date),
-        to: new Date(tourDetails?.end_date),
-      };
-      setDate(previousSetDate);
-    } else {
-      setDate(null);
+    if (tourDetails) {
+      setImage(
+        tourDetails?.image ? tourDetails?.image : tourDetails?.image_url ?? null
+      );
+      setItinerary(
+        tourDetails?.itinerary
+          ? tourDetails?.itinerary
+          : tourDetails?.itinerary_url ?? null
+      );
+      if (tourDetails?.start_date && tourDetails?.end_date) {
+        const previousSetDate = {
+          from: new Date(tourDetails?.start_date),
+          to: new Date(tourDetails?.end_date),
+        };
+        setDate(previousSetDate);
+      } else {
+        setDate(null);
+      }
+      setGuides(tourDetails?.tour_guides);
+      setParticipants(tourDetails?.participants);
+      setNewsletters(tourDetails?.newsletters);
     }
-    setGuides(tourDetails?.tour_guides);
-    setParticipants(tourDetails?.participants);
-    setNewsletters(tourDetails?.newsletters);
   }, [tourDetails]);
 
   useEffect(() => {
@@ -128,7 +136,7 @@ function CreateTourForm({
   }, [guidesList]);
 
   return (
-    <div className="flex h-[100dvh] overflow-hidden">
+    <div className="flex">
       <main className="grow">
         <div className="px-4 sm:px-6 lg:px-8 w-full max-w-[96rem] mx-auto">
           <div className="grid gap-5 md:grid-cols-3">
@@ -136,21 +144,26 @@ function CreateTourForm({
               {/* Start */}
               {image ? (
                 <div className="relative h-60 mb-8 flex items-center justify-center">
-                  {image && (
-                    <img
-                      src={
-                        typeof image === "string"
-                          ? image
-                          : image instanceof Blob
-                          ? URL.createObjectURL(image)
-                          : ""
-                      }
-                      alt="Preview-Image"
-                      className="object-cover h-60 rounded-lg"
-                    />
-                  )}
+                  <img
+                    key={image?.name}
+                    src={
+                      typeof image === "string"
+                        ? image
+                        : image instanceof Blob
+                        ? URL.createObjectURL(image)
+                        : ""
+                    }
+                    alt="Preview-Image"
+                    className="object-cover h-60 rounded-lg"
+                  />
                   <button
-                    onClick={() => setImage(null)}
+                    onClick={() => {
+                      setImage(null);
+                      setTourDetails((prev) => ({
+                        ...prev,
+                        image_url: null,
+                      }));
+                    }}
                     className="w-6 h-6 absolute [right:-10px] [top:-10px] bg-gray-300 rounded-full flex items-center justify-center cursor-pointer"
                   >
                     <svg
@@ -178,10 +191,10 @@ function CreateTourForm({
                     onChange={(e) => {
                       const file = e.target.files[0];
                       setImage(file);
-                      // setTourDetails((prev) => ({
-                      //   ...prev,
-                      //   image_url: file,
-                      // }));
+                      setTourDetails((prev) => ({
+                        ...prev,
+                        image: file,
+                      }));
                     }}
                   />
                   <label

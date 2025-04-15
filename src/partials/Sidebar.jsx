@@ -67,7 +67,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
         } ${
           variant === "v2"
             ? "border-r border-gray-200 dark:border-gray-700/60"
-            : "rounded-r-2xl shadow-xs"
+            : "rounded-r-sm shadow-xs"
         }`}
       >
         {/* Sidebar header */}

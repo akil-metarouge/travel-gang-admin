@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../partials/Sidebar";
 import Header from "../../partials/Header";
 import CreateTourForm from "../../partials/tours/CreateTourForm";
 import { useStatus } from "../../utils/StatusContext";
+import PageLoader from "../../components/PageLoader";
 
 function CreateTour() {
   const apiURL = import.meta.env.VITE_BASE_URL;
@@ -13,72 +14,115 @@ function CreateTour() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tourDetails, setTourDetails] = useState({});
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const uploadImage = (file) => {
-    // Upload image to your server
-    // and return the uploaded image URL
-    const formData = new FormData();
-    formData.append("image", file);
+  const [newImageUrl, setNewImageUrl] = useState(null);
 
-    fetch(`${apiURL}/api/v1/common/media-upload`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data?.response) {
-          console.log("Image uploaded successfully:", data?.response);
-          return data?.response;
-        } else {
-          console.error("Error uploading image:", data.message);
-        }
-      })
-      .catch((error) => {
-        console.error("Error uploading image:", error);
+  const uploadImage = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const response = await fetch(`${apiURL}/api/v1/common/media-upload`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
       });
+
+      if (response.status === 401 || response.status === 403) {
+        // Sign out
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        navigate("/signin");
+        return; // stop further execution
+      }
+
+      const data = await response.json();
+
+      if (data?.response) {
+        console.log("Image uploaded successfully:", data.response);
+        return data.response;
+      } else {
+        console.error("Error uploading image:", data.message);
+        return null;
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      return null;
+    }
   };
 
-  const handleCreate = () => {
-    // Upload Image first
-    // let newImageUrl = "";
-    // if (tourDetails?.image_url) {
-    //   const imageUrl = uploadImage(tourDetails?.image_url);
-    //   newImageUrl = imageUrl?.response;
-    // }
-
-    // if (newImageUrl) {
-    fetch(`${apiURL}/api/v1/tours`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(tourDetails),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data?.response) {
-          console.log("Tour created successfully:", data?.response);
-          setStatus({ type: "success", message: "New Tour Created" });
-          navigate("/tours/" + data?.response?.uid);
-        }
-      })
-      .catch((error) => {
-        console.error("Error creating tour:", error);
+  const createTourAPICall = async (details) => {
+    try {
+      const response = await fetch(`${apiURL}/api/v1/tours`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(details),
+      });
+      if (response.status === 401 || response.status === 403) {
+        // Sign out
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        navigate("/signin");
+        return; // stop further execution
+      }
+      const data = await response.json();
+      if (data?.response) {
+        console.log("Tour created successfully:", data?.response);
+        setStatus({ type: "success", message: "New Tour Created" });
+        navigate("/tours/" + data?.response?.uid);
+      } else {
+        console.error("Error creating tour:", data.message);
         setStatus({
           type: "error",
-          message: error?.message || "Something went wrong",
+          message: data?.message || "Something went wrong",
         });
+      }
+    } catch (error) {
+      console.error("Error creating tour:", error);
+      setStatus({
+        type: "error",
+        message: error?.message || "Something went wrong",
       });
-    // }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  const handleCreate = async () => {
+    setIsLoading(true);
+    // Upload Image first
+    if (tourDetails?.image) {
+      const imageUrl = await uploadImage(tourDetails.image);
+      console.log("Image URL:", imageUrl);
+      setNewImageUrl(imageUrl);
+    }
+  };
+
+  useEffect(() => {
+    if (isLoading) {
+      console.log("New image URL:", newImageUrl);
+      if (newImageUrl) {
+        // Update tour details with new image URL
+        const updatedTourDetails = {
+          ...tourDetails,
+          image_url: newImageUrl,
+        };
+        createTourAPICall(updatedTourDetails);
+      } else {
+        // Create tour without image upload
+        createTourAPICall(tourDetails);
+      }
+    }
+  }, [newImageUrl, isLoading]);
+
   return (
-    <div className="flex h-[100dvh] overflow-hidden">
+    <div className="flex h-[100dvh]">
       {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
@@ -144,6 +188,7 @@ function CreateTour() {
             />
           </div>
         </main>
+        {isLoading && <PageLoader />}
       </div>
     </div>
   );

@@ -49,7 +49,15 @@ function Tours() {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.status === 401 || response.status === 403) {
+          // Sign out
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          navigate("/signin");
+        }
+        return response.json();
+      })
       .then((data) => {
         console.log(data?.response);
         setOngoing(data?.response?.tours?.ongoing);
@@ -219,6 +227,8 @@ function Tours() {
                     ? completedCount
                     : ongoingCount
                 }
+                page={currentPage}
+                setPage={setCurrentPage}
               />
             </div>
           </div>

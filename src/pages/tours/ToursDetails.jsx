@@ -4,15 +4,18 @@ import Sidebar from "../../partials/Sidebar";
 import Header from "../../partials/Header";
 import CreateTourForm from "../../partials/tours/CreateTourForm";
 import { useStatus } from "../../utils/StatusContext";
+import PageLoader from "../../components/PageLoader";
 
 function ToursDetails() {
   const apiURL = import.meta.env.VITE_BASE_URL;
   const token = localStorage.getItem("token");
   const { setStatus } = useStatus();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   const { id } = useParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tourDetails, setTourDetails] = useState({});
+  const [newImageUrl, setNewImageUrl] = useState(null);
 
   //guides states
   const [guides, setGuides] = useState([]);
@@ -32,6 +35,9 @@ function ToursDetails() {
   const [assignParticipantModalOpen, setAssignParticipantModalOpen] =
     useState(false);
 
+  //newsletter states
+  const [newsletters, setNewsletters] = useState([]);
+
   const getTourDetails = () => {
     fetch(`${apiURL}/api/v1/tours/${id}/admin`, {
       method: "GET",
@@ -40,7 +46,15 @@ function ToursDetails() {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.status === 401 || response.status === 403) {
+          // Sign out
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          navigate("/signin");
+        }
+        return response.json();
+      })
       .then((data) => {
         console.log("getTourDetails: ", data?.response);
         setTourDetails(data?.response);
@@ -54,34 +68,99 @@ function ToursDetails() {
       });
   };
 
-  const handleSave = () => {
-    // exclude image_url from tourDetails
-    const { image_url, itinerary, ...rest } = tourDetails;
-    const newTourDetails = { ...rest };
-    console.log("Save tour: ", newTourDetails);
-
-    fetch(`${apiURL}/api/v1/tours/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(newTourDetails),
-    })
-      .then((response) => response.json())
-      .then((data) => {
+  const updateTourAPICall = async (details) => {
+    console.log("updateTourAPICall: ", details);
+    try {
+      const response = await fetch(`${apiURL}/api/v1/tours/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(details),
+      });
+      if (response.status === 401 || response.status === 403) {
+        // Sign out
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        navigate("/signin");
+        return; // stop further execution
+      }
+      const data = await response.json();
+      if (data?.response) {
         console.log("Tour updated successfully:", data?.response);
         setStatus({ type: "success", message: "Tour Updated" });
-        // getTourDetails();
-        navigate(-1);
-      })
-      .catch((error) => {
-        console.error("Error updating tour:", error);
+        // navigate("/tours");
+        getTourDetails();
+      } else {
+        console.error("Error updating tour:", data.message);
         setStatus({
           type: "error",
-          message: error?.message || "Something went wrong",
+          message: data?.message || "Something went wrong",
         });
+      }
+    } catch (error) {
+      console.error("Error updating tour:", error);
+      setStatus({
+        type: "error",
+        message: error?.message || "Something went wrong",
       });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const uploadImage = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const response = await fetch(`${apiURL}/api/v1/common/media-upload`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        // Sign out
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        navigate("/signin");
+        return; // stop further execution
+      }
+
+      const data = await response.json();
+
+      if (data?.response) {
+        console.log("Image uploaded successfully:", data.response);
+        return data.response;
+      } else {
+        console.error("Error uploading image:", data.message);
+        return null;
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      return null;
+    }
+  };
+
+  const handleSave = async () => {
+    // exclude image_url from tourDetails
+    // const { image_url, itinerary, ...rest } = tourDetails;
+    // const newTourDetails = { ...rest };
+    // console.log("Save tour: ", newTourDetails);
+
+    // Upload image if it exists
+    if (tourDetails?.image) {
+      const imageUrl = await uploadImage(tourDetails.image);
+      console.log("Image URL: ", imageUrl);
+      setNewImageUrl(imageUrl);
+      setIsLoading(true);
+    } else {
+      setIsLoading(true);
+    }
   };
 
   // guides functions
@@ -119,7 +198,15 @@ function ToursDetails() {
         guide_ids: updatedGuides,
       }),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.status === 401 || response.status === 403) {
+          // Sign out
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          navigate("/signin");
+        }
+        return response.json();
+      })
       .then((data) => {
         if (data?.response) {
           console.log("Guides updated successfully:", data?.response);
@@ -151,6 +238,14 @@ function ToursDetails() {
           },
         }
       );
+
+      if (response.status === 401 || response.status === 403) {
+        // Sign out
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        navigate("/signin");
+        return; // stop further execution
+      }
 
       const data = await response.json();
       const filteredGuideIds = guides?.map((guide) => guide?.guide?.uid);
@@ -200,7 +295,15 @@ function ToursDetails() {
       },
       body: JSON.stringify(newParticipant),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.status === 401 || response.status === 403) {
+          // Sign out
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          navigate("/signin");
+        }
+        return response.json();
+      })
       .then((data) => {
         console.log("Participant added successfully:", data?.response);
         setStatus({ type: "success", message: "New Participant Added" });
@@ -220,6 +323,25 @@ function ToursDetails() {
   useEffect(() => {
     getTourDetails();
   }, [id]);
+
+  useEffect(() => {
+    if (isLoading) {
+      const { itinerary, ...rest } = tourDetails;
+      const newTourDetails = { ...rest };
+      console.log("Save tour: ", newTourDetails);
+      console.log("New image URL: ", newImageUrl);
+      if (newImageUrl) {
+        const updatedTourDetails = {
+          ...newTourDetails,
+          image_url: newImageUrl,
+        };
+        updateTourAPICall(updatedTourDetails);
+      } else {
+        console.log("Image URL not found, updating without it.");
+        updateTourAPICall(newTourDetails);
+      }
+    }
+  }, [newImageUrl, isLoading]);
 
   // guides actions
   useEffect(() => {
@@ -393,9 +515,11 @@ function ToursDetails() {
               addNewParticipant={addNewParticipant}
               assignParticipantModalOpen={assignParticipantModalOpen}
               setAssignParticipantModalOpen={setAssignParticipantModalOpen}
+              newsletters={newsletters}
             />
           </div>
         </main>
+        {isLoading && <PageLoader />}
       </div>
     </div>
   );

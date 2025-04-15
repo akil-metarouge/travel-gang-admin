@@ -39,7 +39,7 @@ function GuideDetailsTable({ list }) {
                   name={tour?.name}
                   start_date={tour?.start_date}
                   end_date={tour?.end_date}
-                  tour_guides={tour?.tour_guides?.length}
+                  tour_guides={tour?.tour_guides}
                   total_participants={tour?.total_participants}
                 />
               );

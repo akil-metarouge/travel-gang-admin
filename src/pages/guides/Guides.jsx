@@ -26,7 +26,7 @@ function Guides() {
   const getGuidesList = async () => {
     try {
       const response = await fetch(
-        `${apiURL}/api/v1/users/list?page=${page}&perpage=10&role=guide&search=${
+        `${apiURL}/api/v1/users/guides?page=${page}&perpage=10&role=guide&search=${
           searchText || ""
         }`,
         {
@@ -37,10 +37,17 @@ function Guides() {
           },
         }
       );
+      if (response.status === 401 || response.status === 403) {
+        // Sign out
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        navigate("/signin");
+        return; // stop further execution
+      }
       const data = await response.json();
       if (response.ok) {
         console.log("Guides list:", data?.response);
-        setList(data.response?.date);
+        setList(data.response?.data);
         setTotalItems(data.response?.meta?.total);
       } else {
         console.error("Error fetching guides:", data.message);
@@ -64,7 +71,15 @@ function Guides() {
       },
       body: JSON.stringify(guideDetails),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.status === 401 || response.status === 403) {
+          // Sign out
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          navigate("/signin");
+        }
+        return response.json();
+      })
       .then((data) => {
         if (data?.response) {
           console.log("Guide created successfully:", data?.response);
@@ -334,6 +349,8 @@ function Guides() {
                 firstIndex={totalItems === 0 ? 0 : page * 10 - 9}
                 lastIndex={totalItems < page * 10 ? totalItems : page * 10}
                 total={totalItems}
+                page={page}
+                setPage={setPage}
               />
             </div>
           </div>

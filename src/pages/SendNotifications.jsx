@@ -4,9 +4,49 @@ import Header from "../partials/Header";
 
 function SendNotifications() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notificationDetails, setNotificationDetails] = useState({
+    title: "",
+    body: "",
+    type: "",
+  });
 
   const sendNotification = () => {
-    console.log("Sending notification");
+    const apiURL = import.meta.env.VITE_BASE_URL;
+    const token = localStorage.getItem("token");
+
+    fetch(`${apiURL}/api/v1/common/send-notification`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(notificationDetails),
+    })
+      .then((response) => {
+        if (response.status === 401 || response.status === 403) {
+          // Sign out
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          navigate("/signin");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data);
+        if (data?.response) {
+          console.log("Notification sent successfully:", data?.response);
+          setNotificationDetails({
+            title: "",
+            body: "",
+            type: "",
+          });
+        } else {
+          console.error("Error sending notification:", data?.message);
+        }
+      })
+      .catch((error) => {
+        console.error("Error sending notification:", error);
+      });
   };
 
   return (
@@ -37,7 +77,7 @@ function SendNotifications() {
 
             {/* Form */}
             <div className="grid justify-center md:mt-20">
-              <div className="px-5 py-5 w-100 bg-gray-200 dark:bg-gray-800 rounded-lg">
+              <div className="px-5 py-5 w-[600px] bg-gray-200 dark:bg-gray-800 rounded-lg">
                 <div className="space-y-3">
                   <div>
                     <label
@@ -51,6 +91,13 @@ function SendNotifications() {
                       className="form-input w-full px-2 py-2"
                       type="text"
                       required
+                      value={notificationDetails.title}
+                      onChange={(e) =>
+                        setNotificationDetails({
+                          ...notificationDetails,
+                          title: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div>
@@ -63,8 +110,15 @@ function SendNotifications() {
                     <textarea
                       id="description"
                       className="form-textarea w-full px-2 py-1"
-                      rows="4"
+                      rows="6"
                       required
+                      value={notificationDetails.body}
+                      onChange={(e) =>
+                        setNotificationDetails({
+                          ...notificationDetails,
+                          body: e.target.value,
+                        })
+                      }
                     ></textarea>
                   </div>
                   <div>
@@ -77,18 +131,32 @@ function SendNotifications() {
                     <select
                       id="send-to"
                       className="form-select w-full px-2 py-2 cursor-pointer"
+                      required
+                      value={notificationDetails.type}
+                      onChange={(e) =>
+                        setNotificationDetails({
+                          ...notificationDetails,
+                          type: e.target.value,
+                        })
+                      }
                     >
                       <option
                         className="dark:bg-gray-800 cursor-pointer"
-                        value="ongoing-to"
+                        value="ongoing"
                       >
-                        Ongoing to
+                        Ongoing
                       </option>
                       <option
                         className="dark:bg-gray-800 cursor-pointer"
-                        value="completed-by"
+                        value="upcoming"
                       >
-                        Completed by
+                        Upcoming
+                      </option>
+                      <option
+                        className="dark:bg-gray-800 cursor-pointer"
+                        value="completed"
+                      >
+                        Completed
                       </option>
                     </select>
                   </div>

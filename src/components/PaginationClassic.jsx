@@ -1,6 +1,6 @@
 import React from "react";
 
-function PaginationClassic({ firstIndex, lastIndex, total }) {
+function PaginationClassic({ firstIndex, lastIndex, total, page, setPage }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
       <nav
@@ -12,7 +12,10 @@ function PaginationClassic({ firstIndex, lastIndex, total }) {
           <li className="ml-3 first:ml-0">
             <button
               disabled={firstIndex < 1}
-              className={`btn bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 ${
+              onClick={() => {
+                setPage(page - 1);
+              }}
+              className={`btn bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 cursor-pointer ${
                 firstIndex < 2
                   ? "text-gray-300 dark:text-gray-600"
                   : "hover:border-gray-300 dark:hover:border-gray-600 text-gray-800 dark:text-gray-300"
@@ -24,7 +27,10 @@ function PaginationClassic({ firstIndex, lastIndex, total }) {
           <li className="ml-3 first:ml-0">
             <button
               disabled={lastIndex === total}
-              className={`btn bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 ${
+              onClick={() => {
+                setPage(page + 1);
+              }}
+              className={`btn bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 cursor-pointer ${
                 lastIndex === total
                   ? "text-gray-300 dark:text-gray-600"
                   : "hover:border-gray-300 dark:hover:border-gray-600 text-gray-800 dark:text-gray-300"
