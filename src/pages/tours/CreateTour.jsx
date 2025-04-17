@@ -17,13 +17,14 @@ function CreateTour() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [newImageUrl, setNewImageUrl] = useState(null);
+  const [newItineraryUrl, setNewItineraryUrl] = useState(null);
 
-  const uploadImage = async (file) => {
+  const uploadFile = async (file) => {
     try {
       const formData = new FormData();
-      formData.append("image", file);
+      formData.append("file", file);
 
-      const response = await fetch(`${apiURL}/api/v1/common/media-upload`, {
+      const response = await fetch(`${apiURL}/api/v1/common/spaces-upload`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -41,9 +42,9 @@ function CreateTour() {
 
       const data = await response.json();
 
-      if (data?.response) {
-        console.log("Image uploaded successfully:", data.response);
-        return data.response;
+      if (data?.fileUrl) {
+        console.log("File uploaded successfully:", data.fileUrl);
+        return data.fileUrl;
       } else {
         console.error("Error uploading image:", data.message);
         return null;
@@ -96,11 +97,31 @@ function CreateTour() {
 
   const handleCreate = async () => {
     setIsLoading(true);
-    // Upload Image first
-    if (tourDetails?.image) {
-      const imageUrl = await uploadImage(tourDetails.image);
-      console.log("Image URL:", imageUrl);
-      setNewImageUrl(imageUrl);
+    // Upload Image and/or Itinerary
+    if (tourDetails?.image_url || tourDetails?.itinerary) {
+      if (tourDetails?.image_url && typeof tourDetails.image_url === "object") {
+        try {
+          const imageUrl = await uploadFile(tourDetails.image_url);
+          console.log("Image URL:", imageUrl);
+          if (imageUrl) {
+            setNewImageUrl(imageUrl);
+          }
+        } catch (err) {
+          console.error("Image upload failed:", err);
+        }
+      }
+
+      if (tourDetails?.itinerary && typeof tourDetails.itinerary === "object") {
+        try {
+          const itineraryUrl = await uploadFile(tourDetails.itinerary);
+          console.log("Itinerary URL:", itineraryUrl);
+          if (itineraryUrl) {
+            setNewItineraryUrl(itineraryUrl);
+          }
+        } catch (err) {
+          console.error("Itinerary upload failed:", err);
+        }
+      }
     }
   };
 
@@ -152,20 +173,30 @@ function CreateTour() {
 
   useEffect(() => {
     if (isLoading) {
-      console.log("New image URL:", newImageUrl);
-      if (newImageUrl) {
-        // Update tour details with new image URL
-        const updatedTourDetails = {
-          ...tourDetails,
-          image_url: newImageUrl,
-        };
-        createTourAPICall(updatedTourDetails);
-      } else {
-        // Create tour without image upload
-        createTourAPICall(tourDetails);
+      const shouldUploadImage = !!tourDetails?.image_url;
+      const shouldUploadItinerary = !!tourDetails?.itinerary;
+
+      const hasImageUrl = !!newImageUrl;
+      const hasItineraryUrl = !!newItineraryUrl;
+
+      // Wait until expected uploads are done
+      if (
+        (shouldUploadImage && !hasImageUrl) ||
+        (shouldUploadItinerary && !hasItineraryUrl)
+      ) {
+        return;
       }
+
+      // Build the final payload
+      const updatedTourDetails = {
+        ...tourDetails,
+        ...(shouldUploadImage && { image_url: newImageUrl }),
+        ...(shouldUploadItinerary && { itinerary: newItineraryUrl }),
+      };
+
+      createTourAPICall(updatedTourDetails);
     }
-  }, [newImageUrl, isLoading]);
+  }, [newImageUrl, newItineraryUrl, isLoading]);
 
   return (
     <div className="flex h-[100dvh]">
@@ -185,7 +216,7 @@ function CreateTour() {
               <div className="mb-4 sm:mb-0 flex">
                 {/* back btn */}
                 <button
-                  onClick={() => navigate(-1)}
+                  onClick={() => navigate("/tours")}
                   className="btn cursor-pointer"
                 >
                   <svg

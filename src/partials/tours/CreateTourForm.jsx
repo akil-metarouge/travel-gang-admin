@@ -8,7 +8,6 @@ function CreateTourForm({
   tourDetails,
   setTourDetails,
   guides,
-  setGuides = () => {},
   modifyAssignedGuides,
   assignGuideModalOpen,
   setAssignGuideModalOpen,
@@ -19,20 +18,22 @@ function CreateTourForm({
   guideSearchText,
   setGuideSearchText,
   participants,
-  setParticipants = () => {},
-  newParticipantDetails,
-  setNewParticipantDetails,
-  addNewParticipant,
+  participantDetails,
+  setParticipantDetails,
+  handleParticipantDetailsSubmit,
+  editParticipant,
+  setEditParticipant,
+  removeParticipant,
   assignParticipantModalOpen,
   setAssignParticipantModalOpen,
+  newsletters,
   handleUploadCSV,
 }) {
   const [isCreateForm, setIsCreateForm] = useState(false);
+  const hasInitialized = useRef(false);
   const [image, setImage] = useState(null);
   const [itinerary, setItinerary] = useState(null);
   const [date, setDate] = useState(null);
-  const [newsletters, setNewsletters] = useState([]);
-  const [bookingDetails, setBookingDetails] = useState(null);
 
   const [assignNewsletterModalOpen, setAssignNewsletterModalOpen] =
     useState(false);
@@ -41,12 +42,6 @@ function CreateTourForm({
     name: "",
     url: "",
   });
-
-  const [participantMenuOpen, setParticipantMenuOpen] = useState(false);
-
-  const handleNewsletterMenuBtnClick = () => {
-    console.log("Newsletter Menu Button Clicked");
-  };
 
   const handleAddNewGuideBtnClick = () => {
     console.log("Add New Guide Button Clicked");
@@ -71,27 +66,21 @@ function CreateTourForm({
   }, []);
 
   useEffect(() => {
-    if (tourDetails) {
-      setImage(
-        tourDetails?.image ? tourDetails?.image : tourDetails?.image_url ?? null
-      );
-      setItinerary(
-        tourDetails?.itinerary
-          ? tourDetails?.itinerary
-          : tourDetails?.itinerary_url ?? null
-      );
+    if (tourDetails?.image_url && !hasInitialized.current) {
+      hasInitialized.current = true;
+
+      setImage(tourDetails?.image_url ? tourDetails.image_url : null);
+      setItinerary(tourDetails?.itinerary ? tourDetails.itinerary : null);
+
       if (tourDetails?.start_date && tourDetails?.end_date) {
         const previousSetDate = {
-          from: new Date(tourDetails?.start_date),
-          to: new Date(tourDetails?.end_date),
+          from: new Date(tourDetails.start_date),
+          to: new Date(tourDetails.end_date),
         };
         setDate(previousSetDate);
       } else {
         setDate(null);
       }
-      setGuides(tourDetails?.tour_guides);
-      setParticipants(tourDetails?.participants);
-      setNewsletters(tourDetails?.newsletters);
     }
   }, [tourDetails]);
 
@@ -122,15 +111,17 @@ function CreateTourForm({
     };
   }, [itinerary]);
 
-  // console.log("guides: ", guides.map((g) => g.selected));
-  // console.log("participants: ", participants);
-  // console.log("searchText: ", guideSearchText);
-  // console.log("bookingDetails: ", bookingDetails);
-  // console.log("newNewsletter: ", newNewsletter?.image);
-  // console.log("assignNewsletterModalOpen: ", assignNewsletterModalOpen);
   useEffect(() => {
     console.log("tourDetails: ", tourDetails);
   }, [tourDetails]);
+
+  useEffect(() => {
+    console.log("participantDetails: ", participantDetails);
+  }, [participantDetails]);
+
+  useEffect(() => {
+    console.log("assignParticipantModalOpen: ", assignParticipantModalOpen);
+  }, [assignParticipantModalOpen]);
 
   useEffect(() => {
     console.log("guidesList: ", guidesList);
@@ -194,7 +185,7 @@ function CreateTourForm({
                       setImage(file);
                       setTourDetails((prev) => ({
                         ...prev,
-                        image: file,
+                        image_url: file,
                       }));
                     }}
                   />
@@ -209,36 +200,18 @@ function CreateTourForm({
 
               {itinerary ? (
                 <div className="relative h-60 mb-8 flex items-center justify-center">
-                  {(() => {
-                    const isFile =
-                      typeof itinerary === "object" &&
-                      itinerary instanceof Blob;
-                    const type = isFile
-                      ? itinerary.type
-                      : itinerary?.split(".").pop()?.toLowerCase();
-                    const isPdf = isFile
-                      ? itinerary.type === "application/pdf"
-                      : type === "pdf";
-
-                    const source = isFile
-                      ? URL.createObjectURL(itinerary)
-                      : itinerary;
-
-                    return isPdf ? (
-                      <iframe
-                        src={source}
-                        title="PDF Preview"
-                        className="w-full h-60 rounded-lg"
-                      />
-                    ) : (
-                      <img
-                        src={source}
-                        alt="Itinerary-image"
-                        className="object-cover h-60 rounded-lg"
-                      />
-                    );
-                  })()}
-
+                  <iframe
+                    src={
+                      typeof itinerary === "string"
+                        ? itinerary
+                        : itinerary instanceof Blob || itinerary instanceof File
+                        ? URL.createObjectURL(itinerary)
+                        : ""
+                    }
+                    alt="Preview-Itinerary"
+                    className="object-cover h-60 rounded-lg"
+                    title="Itinerary Preview"
+                  ></iframe>
                   <button
                     onClick={() => setItinerary(null)}
                     className="w-6 h-6 absolute [right:-10px] [top:-10px] bg-gray-300 rounded-full flex items-center justify-center cursor-pointer"
@@ -263,16 +236,15 @@ function CreateTourForm({
                   <input
                     id="file-upload"
                     type="file"
-                    disabled
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:opacity-0 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
-                    accept="image/png, image/jpeg, application/pdf"
+                    accept="application/pdf"
                     onChange={(e) => {
                       const file = e.target.files[0];
                       setItinerary(file);
-                      // setTourDetails((prev) => ({
-                      //   ...prev,
-                      //   itinerary: file,
-                      // }));
+                      setTourDetails((prev) => ({
+                        ...prev,
+                        itinerary: file,
+                      }));
                     }}
                   />
                   <label
@@ -370,10 +342,10 @@ function CreateTourForm({
                             key={idx}
                             className="grid grid-cols-2 h-14 text-sm items-center justify-between bg-gray-300 dark:bg-gray-700 p-4 rounded-lg"
                           >
-                            <div>{guide?.guide?.full_name}</div>
+                            <div>{guide?.full_name}</div>
                             <button
                               onClick={() => {
-                                modifyAssignedGuides(guide?.guide?.uid);
+                                modifyAssignedGuides(guide?.uid);
                               }}
                               className="text-end text-red-500 hover:text-red-700 cursor-pointer"
                             >
@@ -525,6 +497,11 @@ function CreateTourForm({
                         onClick={(e) => {
                           e.stopPropagation(e);
                           setAssignParticipantModalOpen(true);
+                          setEditParticipant(false);
+                          setParticipantDetails({
+                            primary_participant_id: null,
+                            is_primary: false,
+                          });
                         }}
                         className="btn bg-gray-300 dark:bg-gray-700 cursor-pointer hover:bg-gray-400 dark:hover:bg-gray-600"
                       >
@@ -555,10 +532,21 @@ function CreateTourForm({
                       {participants?.map((participant, idx) => (
                         <div
                           key={idx}
-                          className="grid grid-cols-2 h-10 items-center justify-between"
+                          className="grid grid-cols-5 h-10 items-center justify-between"
                         >
-                          <div>{participant?.full_name}</div>
-                          <div className="flex items-center justify-between">
+                          <div className="col-span-3 flex gap-2">
+                            <div className="max-w-32 overflow-hidden text-ellipsis whitespace-nowrap">
+                              {participant?.full_name}
+                            </div>
+                            <div>
+                              {participant?.is_primary && (
+                                <span className="text-sm text-gray-500 font-semibold">
+                                  Primary
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="col-span-2 flex items-center justify-between">
                             <div className="text-gray-500">
                               ID: {participant?.identity_code}
                             </div>
@@ -568,21 +556,26 @@ function CreateTourForm({
                                 participants?.length >= 7 && "mr-5"
                               }`}
                             >
-                              <li>
+                              {/* <li>
                                 <button
-                                  onClick={() => {
-                                    console.log("edit clicked");
+                                  onClick={(e) => {
+                                    e.stopPropagation(e);
+                                    setAssignParticipantModalOpen(true);
+                                    setEditParticipant(true);
+                                    setParticipantDetails(participant);
                                   }}
                                   className="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex py-1 px-3 w-full cursor-pointer"
                                   href="#0"
                                 >
                                   Edit
                                 </button>
-                              </li>
+                              </li> */}
                               <li>
                                 <button
                                   onClick={() => {
-                                    console.log("remove clicked");
+                                    removeParticipant(
+                                      participant?.tour_participant_uid
+                                    );
                                   }}
                                   className="font-medium text-sm text-red-500 hover:text-red-600 flex py-1 px-3 w-full cursor-pointer"
                                   href="#0"
@@ -619,6 +612,11 @@ function CreateTourForm({
                           onClick={(e) => {
                             e.stopPropagation(e);
                             setAssignParticipantModalOpen(true);
+                            setEditParticipant(false);
+                            setParticipantDetails({
+                              primary_participant_id: null,
+                              is_primary: false,
+                            });
                           }}
                           disabled={isCreateForm}
                           className="btn w-60 bg-gray-300 dark:bg-gray-700 cursor-pointer hover:bg-gray-400 dark:hover:bg-gray-600 disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
@@ -656,7 +654,10 @@ function CreateTourForm({
                 id="participant-modal"
                 modalOpen={assignParticipantModalOpen}
                 setModalOpen={setAssignParticipantModalOpen}
-                title="Add Participant"
+                setParticipantDetails={setParticipantDetails}
+                title={
+                  editParticipant ? "Update Participant" : "Add Participant"
+                }
               >
                 {/* Modal content */}
                 <div className="px-5 py-4">
@@ -672,11 +673,11 @@ function CreateTourForm({
                         id="name"
                         className="form-input w-full px-2 py-2"
                         type="text"
-                        value={newParticipantDetails?.name ?? ""}
+                        value={participantDetails?.full_name ?? ""}
                         onChange={(e) => {
-                          setNewParticipantDetails((prev) => ({
+                          setParticipantDetails((prev) => ({
                             ...prev,
-                            name: e.target.value,
+                            full_name: e.target.value,
                           }));
                         }}
                       />
@@ -684,9 +685,9 @@ function CreateTourForm({
                         <input
                           type="checkbox"
                           className="form-checkbox rounded-full checked:bg-green-600 checked:border-transparent w-6 h-6 cursor-pointer"
-                          checked={!!newParticipantDetails?.is_primary}
+                          checked={!!participantDetails?.is_primary}
                           onChange={() =>
-                            setNewParticipantDetails((prev) => ({
+                            setParticipantDetails((prev) => ({
                               ...prev,
                               is_primary: !prev.is_primary,
                             }))
@@ -708,11 +709,9 @@ function CreateTourForm({
                         id="select-primary-participant"
                         className="form-select w-full px-2 py-2 cursor-pointer disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
                         disabled={participants?.length < 2}
-                        value={
-                          newParticipantDetails?.primary_participant_id ?? ""
-                        }
+                        value={participantDetails?.primary_participant_id ?? ""}
                         onChange={(e) =>
-                          setNewParticipantDetails((prev) => ({
+                          setParticipantDetails((prev) => ({
                             ...prev,
                             primary_participant_id: e.target.value,
                           }))
@@ -743,9 +742,9 @@ function CreateTourForm({
                         id="phoneNumber"
                         className="form-input w-full px-2 py-2"
                         type="tel"
-                        value={newParticipantDetails?.phone_number ?? ""}
+                        value={participantDetails?.phone_number ?? ""}
                         onChange={(e) => {
-                          setNewParticipantDetails((prev) => ({
+                          setParticipantDetails((prev) => ({
                             ...prev,
                             phone_number: e.target.value,
                           }));
@@ -763,9 +762,9 @@ function CreateTourForm({
                         id="participant-id"
                         className="form-input w-full px-2 py-2"
                         type="text"
-                        value={newParticipantDetails?.identity_code ?? ""}
+                        value={participantDetails?.identity_code ?? ""}
                         onChange={(e) => {
-                          setNewParticipantDetails((prev) => ({
+                          setParticipantDetails((prev) => ({
                             ...prev,
                             identity_code: e.target.value,
                           }));
@@ -805,17 +804,18 @@ function CreateTourForm({
                           type="file"
                           id="bookingDetails"
                           onChange={(e) => {
-                            setBookingDetails(e.target.files[0]);
-                            setNewParticipantDetails((prev) => ({
+                            setParticipantDetails((prev) => ({
                               ...prev,
-                              booking_details: e.target.files[0],
+                              booking_details_url: e.target.files[0],
                             }));
                           }}
                         />
                       </div>
-                      {bookingDetails && (
+                      {participantDetails?.booking_details_url && (
                         <div className="mt-4 flex items-center gap-2 text-sm w-full overflow-hidden">
-                          {bookingDetails?.name}
+                          {participantDetails?.booking_details_url?.name ??
+                            participantDetails?.booking_details_url ??
+                            ""}
                         </div>
                       )}
                     </div>
@@ -828,8 +828,10 @@ function CreateTourForm({
                       className="btn border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-gray-800 dark:text-gray-300 cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setNewParticipantDetails({});
-                        setBookingDetails(null);
+                        setParticipantDetails({
+                          primary_participant_id: null,
+                          is_primary: false,
+                        });
                         setAssignParticipantModalOpen(false);
                       }}
                     >
@@ -838,11 +840,11 @@ function CreateTourForm({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        addNewParticipant();
+                        handleParticipantDetailsSubmit();
                       }}
                       className="btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white cursor-pointer"
                     >
-                      Add
+                      {editParticipant ? "Update" : "Add"}
                     </button>
                   </div>
                 </div>

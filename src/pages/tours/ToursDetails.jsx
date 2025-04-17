@@ -13,12 +13,13 @@ function ToursDetails() {
   const navigate = useNavigate();
   const [isLoadingForTourDetailsUpdate, setIsLoadingForTourDetailsUpdate] =
     useState(false);
-  const [isLoadingForCSVUpload, setIsLoadingForCSVUpload] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { id } = useParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tourDetails, setTourDetails] = useState({});
   const [newImageUrl, setNewImageUrl] = useState(null);
+  const [newItineraryUrl, setNewItineraryUrl] = useState(null);
 
   //guides states
   const [guides, setGuides] = useState([]);
@@ -34,14 +35,19 @@ function ToursDetails() {
 
   //participants states
   const [participants, setParticipants] = useState([]);
-  const [newParticipantDetails, setNewParticipantDetails] = useState([]);
+  const [participantDetails, setParticipantDetails] = useState({
+    primary_participant_id: null,
+    is_primary: false,
+  });
   const [assignParticipantModalOpen, setAssignParticipantModalOpen] =
     useState(false);
+  const [editParticipant, setEditParticipant] = useState(false);
 
   //newsletter states
   const [newsletters, setNewsletters] = useState([]);
 
   const getTourDetails = () => {
+    setIsLoading(true);
     fetch(`${apiURL}/api/v1/tours/${id}/admin`, {
       method: "GET",
       headers: {
@@ -59,8 +65,11 @@ function ToursDetails() {
         return response.json();
       })
       .then((data) => {
-        console.log("getTourDetails: ", data?.response);
+        // console.log("getTourDetails: ", data?.response);
         setTourDetails(data?.response);
+        setParticipants(data?.response?.participants || []);
+        setGuides(data?.response?.guides || []);
+        setNewsletters(data?.response?.newsletters || []);
       })
       .catch((error) => {
         console.error("Error fetching tour details:", error);
@@ -68,6 +77,9 @@ function ToursDetails() {
           type: "error",
           message: error?.message || "Something went wrong",
         });
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   };
 
@@ -113,12 +125,12 @@ function ToursDetails() {
     }
   };
 
-  const uploadImage = async (file) => {
+  const uploadFile = async (file) => {
     try {
       const formData = new FormData();
-      formData.append("image", file);
+      formData.append("file", file);
 
-      const response = await fetch(`${apiURL}/api/v1/common/media-upload`, {
+      const response = await fetch(`${apiURL}/api/v1/common/spaces-upload`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -136,9 +148,9 @@ function ToursDetails() {
 
       const data = await response.json();
 
-      if (data?.response) {
-        console.log("Image uploaded successfully:", data.response);
-        return data.response;
+      if (data?.fileUrl) {
+        console.log("File uploaded successfully:", data.fileUrl);
+        return data.fileUrl;
       } else {
         console.error("Error uploading image:", data.message);
         return null;
@@ -150,7 +162,7 @@ function ToursDetails() {
   };
 
   const handleUploadCSV = async (file) => {
-    setIsLoadingForCSVUpload(true);
+    setIsLoading(true);
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -191,24 +203,38 @@ function ToursDetails() {
         message: error?.message || "Something went wrong",
       });
     } finally {
-      setIsLoadingForCSVUpload(false);
+      setIsLoading(false);
     }
   };
 
   const handleSave = async () => {
-    // exclude image_url from tourDetails
-    // const { image_url, itinerary, ...rest } = tourDetails;
-    // const newTourDetails = { ...rest };
-    // console.log("Save tour: ", newTourDetails);
+    setIsLoadingForTourDetailsUpdate(true);
 
-    // Upload image if it exists
-    if (tourDetails?.image) {
-      const imageUrl = await uploadImage(tourDetails.image);
-      console.log("Image URL: ", imageUrl);
-      setNewImageUrl(imageUrl);
-      setIsLoadingForTourDetailsUpdate(true);
-    } else {
-      setIsLoadingForTourDetailsUpdate(true);
+    // Upload Image and/or Itinerary
+    if (tourDetails?.image_url || tourDetails?.itinerary) {
+      if (tourDetails?.image_url && typeof tourDetails.image_url === "object") {
+        try {
+          const imageUrl = await uploadFile(tourDetails.image_url);
+          console.log("Image URL:", imageUrl);
+          if (imageUrl) {
+            setNewImageUrl(imageUrl);
+          }
+        } catch (err) {
+          console.error("Image upload failed:", err);
+        }
+      }
+
+      if (tourDetails?.itinerary && typeof tourDetails.itinerary === "object") {
+        try {
+          const itineraryUrl = await uploadFile(tourDetails.itinerary);
+          console.log("Itinerary URL:", itineraryUrl);
+          if (itineraryUrl) {
+            setNewItineraryUrl(itineraryUrl);
+          }
+        } catch (err) {
+          console.error("Itinerary upload failed:", err);
+        }
+      }
     }
   };
 
@@ -297,7 +323,7 @@ function ToursDetails() {
       }
 
       const data = await response.json();
-      const filteredGuideIds = guides?.map((guide) => guide?.guide?.uid);
+      const filteredGuideIds = guides?.map((guide) => guide?.uid);
 
       // const guidesForList = data?.response?.date?.filter((guide) => {
       //   return !filteredGuideIds?.includes(guide.uid);
@@ -327,45 +353,147 @@ function ToursDetails() {
   };
 
   // participants functions
-  const addNewParticipant = () => {
-    console.log("New participant details: ", newParticipantDetails);
+  const handleParticipantDetailsSubmit = async () => {
+    console.log("New participant details: ", participantDetails);
 
-    const { primary_participant_id, is_primary } = newParticipantDetails;
-    const newParticipant = {
-      ...newParticipantDetails,
-      primary_participant_id: !is_primary ? primary_participant_id : null,
-    };
+    try {
+      let fileUrl = participantDetails?.booking_details_url || null;
 
-    fetch(`${apiURL}/api/v1/tours/${tourDetails?.uid}/participant`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(newParticipant),
-    })
-      .then((response) => {
-        if (response.status === 401 || response.status === 403) {
-          // Sign out
-          localStorage.removeItem("user");
-          localStorage.removeItem("token");
-          navigate("/signin");
+      // Upload file first
+      if (fileUrl && typeof fileUrl === "object") {
+        try {
+          fileUrl = await uploadFile(fileUrl);
+          console.log("Uploaded booking details file URL:", fileUrl);
+        } catch (uploadError) {
+          console.error("Failed to upload booking details file:", uploadError);
+          setStatus({
+            type: "error",
+            message: "Failed to upload booking details file",
+          });
+          return;
         }
-        return response.json();
-      })
-      .then((data) => {
+      }
+
+      const {
+        primary_participant_id,
+        is_primary,
+        full_name,
+        uid,
+        booking_details_url,
+        portal_url,
+        tour_participant_uid,
+        ...rest
+      } = participantDetails;
+      const newParticipant = {
+        ...rest,
+        name: full_name,
+        // booking_details_url: fileUrl,
+        is_primary: is_primary ? true : false,
+        primary_participant_id: !is_primary ? primary_participant_id : null,
+      };
+
+      if (fileUrl) {
+        newParticipant.booking_details_url = fileUrl;
+      }
+
+      if (editParticipant) {
+        newParticipant.participant_id = uid;
+      }
+
+      const response = await fetch(
+        `${apiURL}/api/v1/tours/${tourDetails?.uid}/participant${
+          editParticipant ? `/${uid}` : ""
+        }`,
+        {
+          method: editParticipant ? "PUT" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(newParticipant),
+        }
+      );
+
+      if (response.status === 401 || response.status === 403) {
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        navigate("/signin");
+        return;
+      }
+
+      const data = await response.json();
+      if (response.ok) {
         console.log("Participant added successfully:", data?.response);
         setStatus({ type: "success", message: "New Participant Added" });
         setAssignParticipantModalOpen(false);
-        setNewParticipantDetails({});
+        setParticipantDetails({
+          primary_participant_id: null,
+          is_primary: false,
+        });
+        setEditParticipant(false);
+        getTourDetails();
+      } else {
+        console.error("Error adding participant:", data.message);
+        setStatus({
+          type: "error",
+          message: data?.message || "Something went wrong",
+        });
+      }
+    } catch (error) {
+      console.error("Error adding participant:", error);
+      setStatus({
+        type: "error",
+        message: error?.message || "Something went wrong",
+      });
+    }
+  };
+
+  const removeParticipant = (participantId) => {
+    setIsLoading(true);
+    console.log("Remove participant ID: ", participantId);
+    fetch(
+      `${apiURL}/api/v1/tours/${tourDetails?.uid}/participant/${participantId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+      .then(async (response) => {
+        if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          navigate("/signin");
+          return;
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          // Non-200 responses (like 400, 500)
+          throw new Error(data?.message || "Failed to remove participant");
+        }
+
+        return data;
+      })
+      .then((data) => {
+        console.log("Participant removed successfully:", data?.response);
+        if (data?.response) {
+          setStatus({ type: "success", message: "Participant Removed" });
+        }
         getTourDetails();
       })
       .catch((error) => {
-        console.error("Error adding participant:", error);
+        console.error("Error removing participant:", error);
         setStatus({
           type: "error",
           message: error?.message || "Something went wrong",
         });
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   };
 
@@ -375,22 +503,34 @@ function ToursDetails() {
 
   useEffect(() => {
     if (isLoadingForTourDetailsUpdate) {
-      const { itinerary, ...rest } = tourDetails;
-      const newTourDetails = { ...rest };
-      console.log("Save tour: ", newTourDetails);
-      console.log("New image URL: ", newImageUrl);
-      if (newImageUrl) {
-        const updatedTourDetails = {
-          ...newTourDetails,
-          image_url: newImageUrl,
-        };
-        updateTourAPICall(updatedTourDetails);
-      } else {
-        console.log("Image URL not found, updating without it.");
-        updateTourAPICall(newTourDetails);
+      const shouldUploadImage =
+        !!tourDetails?.image_url && typeof tourDetails.image_url === "object";
+      const shouldUploadItinerary =
+        !!tourDetails?.itinerary && typeof tourDetails.itinerary === "object";
+
+      const hasImageUrl = !!newImageUrl;
+      const hasItineraryUrl = !!newItineraryUrl;
+
+      // Wait until expected uploads are done
+      if (
+        (shouldUploadImage && !hasImageUrl) ||
+        (shouldUploadItinerary && !hasItineraryUrl)
+      ) {
+        return; // wait for required uploads to complete
       }
+
+      // Exclude raw file/blob versions
+      const { image, itinerary, ...rest } = tourDetails;
+      const updatedTourDetails = {
+        ...rest,
+        ...(shouldUploadImage && { image_url: newImageUrl }),
+        ...(shouldUploadItinerary && { itinerary: newItineraryUrl }),
+      };
+
+      console.log("Final tour update payload:", updatedTourDetails);
+      updateTourAPICall(updatedTourDetails);
     }
-  }, [newImageUrl, setIsLoadingForTourDetailsUpdate]);
+  }, [newImageUrl, newItineraryUrl, isLoadingForTourDetailsUpdate]);
 
   // guides actions
   useEffect(() => {
@@ -559,9 +699,12 @@ function ToursDetails() {
               setGuideSearchText={setGuideSearchText}
               participants={participants}
               setParticipants={setParticipants}
-              newParticipantDetails={newParticipantDetails}
-              setNewParticipantDetails={setNewParticipantDetails}
-              addNewParticipant={addNewParticipant}
+              participantDetails={participantDetails}
+              setParticipantDetails={setParticipantDetails}
+              handleParticipantDetailsSubmit={handleParticipantDetailsSubmit}
+              editParticipant={editParticipant}
+              setEditParticipant={setEditParticipant}
+              removeParticipant={removeParticipant}
               assignParticipantModalOpen={assignParticipantModalOpen}
               setAssignParticipantModalOpen={setAssignParticipantModalOpen}
               newsletters={newsletters}
@@ -569,9 +712,7 @@ function ToursDetails() {
             />
           </div>
         </main>
-        {(isLoadingForTourDetailsUpdate || isLoadingForCSVUpload) && (
-          <PageLoader />
-        )}
+        {(isLoadingForTourDetailsUpdate || isLoading) && <PageLoader />}
       </div>
     </div>
   );
