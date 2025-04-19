@@ -28,20 +28,19 @@ function CreateTourForm({
   setAssignParticipantModalOpen,
   newsletters,
   handleUploadCSV,
+  newsletterDetails,
+  setNewsletterDetails,
+  assignNewsletterModalOpen,
+  setAssignNewsletterModalOpen,
+  handleNewsletterDetailsSubmit,
+  editNewsletter,
+  setEditNewsletter,
 }) {
   const [isCreateForm, setIsCreateForm] = useState(false);
   const hasInitialized = useRef(false);
   const [image, setImage] = useState(null);
   const [itinerary, setItinerary] = useState(null);
   const [date, setDate] = useState(null);
-
-  const [assignNewsletterModalOpen, setAssignNewsletterModalOpen] =
-    useState(false);
-  const [newNewsletter, setNewNewsletter] = useState({
-    image: null,
-    name: "",
-    url: "",
-  });
 
   const handleAddNewGuideBtnClick = () => {
     console.log("Add New Guide Button Clicked");
@@ -115,13 +114,17 @@ function CreateTourForm({
     console.log("tourDetails: ", tourDetails);
   }, [tourDetails]);
 
-  useEffect(() => {
-    console.log("participantDetails: ", participantDetails);
-  }, [participantDetails]);
+  // useEffect(() => {
+  //   console.log("participantDetails: ", participantDetails);
+  // }, [participantDetails]);
+
+  // useEffect(() => {
+  //   console.log("assignParticipantModalOpen: ", assignParticipantModalOpen);
+  // }, [assignParticipantModalOpen]);
 
   useEffect(() => {
-    console.log("assignParticipantModalOpen: ", assignParticipantModalOpen);
-  }, [assignParticipantModalOpen]);
+    console.log("assignNewsletterModalOpen: ", assignNewsletterModalOpen);
+  }, [assignNewsletterModalOpen]);
 
   useEffect(() => {
     console.log("guidesList: ", guidesList);
@@ -556,7 +559,7 @@ function CreateTourForm({
                                 participants?.length >= 7 && "mr-5"
                               }`}
                             >
-                              {/* <li>
+                              <li>
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation(e);
@@ -569,7 +572,7 @@ function CreateTourForm({
                                 >
                                   Edit
                                 </button>
-                              </li> */}
+                              </li>
                               <li>
                                 <button
                                   onClick={() => {
@@ -863,6 +866,12 @@ function CreateTourForm({
                       onClick={(e) => {
                         e.stopPropagation(e);
                         setAssignNewsletterModalOpen(true);
+                        setEditNewsletter(false);
+                        setNewsletterDetails({
+                          title: "",
+                          url: "",
+                          image: null,
+                        });
                       }}
                       className="btn w-60 bg-gray-300 dark:bg-gray-700 cursor-pointer hover:bg-gray-400 dark:hover:bg-gray-600"
                     >
@@ -886,9 +895,9 @@ function CreateTourForm({
                           <div className="flex gap-4 items-center">
                             <div className="w-16 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
                               <img
-                                src={newsletter.image_url}
+                                src={newsletter?.image}
                                 alt="User"
-                                className="w-full h-full object-cover rounded-full"
+                                className="w-full h-full object-cover"
                               />
                             </div>
                             <div className="font-medium">
@@ -921,8 +930,14 @@ function CreateTourForm({
                             >
                               <li>
                                 <button
-                                  onClick={() => {
-                                    console.log("edit clicked");
+                                  onClick={(e) => {
+                                    e.stopPropagation(e);
+                                    setAssignNewsletterModalOpen(true);
+                                    setNewsletterDetails({
+                                      idx: idx,
+                                      ...newsletter,
+                                    });
+                                    setEditNewsletter(true);
                                   }}
                                   className="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex py-1 px-3 w-full cursor-pointer"
                                   href="#0"
@@ -932,8 +947,9 @@ function CreateTourForm({
                               </li>
                               <li>
                                 <button
-                                  onClick={() => {
-                                    console.log("remove clicked");
+                                  onClick={(e) => {
+                                    e.stopPropagation(e);
+                                    handleNewsletterDetailsSubmit(idx);
                                   }}
                                   className="font-medium text-sm text-red-500 hover:text-red-600 flex py-1 px-3 w-full cursor-pointer"
                                   href="#0"
@@ -961,6 +977,12 @@ function CreateTourForm({
                           onClick={(e) => {
                             e.stopPropagation(e);
                             setAssignNewsletterModalOpen(true);
+                            setEditNewsletter(false);
+                            setNewsletterDetails({
+                              title: "",
+                              url: "",
+                              image: null,
+                            });
                           }}
                           disabled={isCreateForm}
                           className="btn w-60 bg-gray-300 dark:bg-gray-700 cursor-pointer hover:bg-gray-400 dark:hover:bg-gray-600 disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
@@ -976,7 +998,7 @@ function CreateTourForm({
                 id="participant-modal"
                 modalOpen={assignNewsletterModalOpen}
                 setModalOpen={setAssignNewsletterModalOpen}
-                title="Add Newsletter"
+                title={editNewsletter ? "Update Newsletter" : "Add Newsletter"}
               >
                 {/* Modal content */}
                 <div className="px-5 py-4">
@@ -992,7 +1014,13 @@ function CreateTourForm({
                         id="title"
                         className="form-input w-full px-2 py-2"
                         type="text"
-                        required
+                        value={newsletterDetails?.title ?? ""}
+                        onChange={(e) => {
+                          setNewsletterDetails((prev) => ({
+                            ...prev,
+                            title: e.target.value,
+                          }));
+                        }}
                       />
                     </div>
                     <div>
@@ -1006,13 +1034,24 @@ function CreateTourForm({
                         id="url"
                         className="form-input w-full px-2 py-2"
                         type="text"
+                        value={newsletterDetails?.url ?? ""}
+                        onChange={(e) => {
+                          setNewsletterDetails((prev) => ({
+                            ...prev,
+                            url: e.target.value,
+                          }));
+                        }}
                       />
                     </div>
-                    {newNewsletter?.image ? (
+                    {newsletterDetails?.image ? (
                       <div className="mb-1 mt-5">
                         <div>
                           <img
-                            src={URL.createObjectURL(newNewsletter.image)}
+                            src={
+                              typeof newsletterDetails?.image === "object"
+                                ? URL.createObjectURL(newsletterDetails.image)
+                                : newsletterDetails?.image
+                            }
                             alt="Image"
                             className="object-cover w-full max-h-80 rounded-lg"
                           />
@@ -1040,7 +1079,7 @@ function CreateTourForm({
                             <line x1="6" y1="6" x2="18" y2="18"></line>
                           </svg>
                         </button> */}
-                        <div className="relative h-12 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-between cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600">
+                        <div className="relative h-12 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-between cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600 mt-2">
                           <label
                             htmlFor="newsletter-image"
                             className="text-blue-500 flex justify-center items-center gap-2 w-full"
@@ -1053,7 +1092,7 @@ function CreateTourForm({
                             type="file"
                             id="newsletter-image"
                             onChange={(e) => {
-                              setNewNewsletter((prev) => ({
+                              setNewsletterDetails((prev) => ({
                                 ...prev,
                                 image: e.target.files[0],
                               }));
@@ -1069,7 +1108,7 @@ function CreateTourForm({
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                           accept="image/png, image/jpeg"
                           onChange={(e) => {
-                            setNewNewsletter((prev) => ({
+                            setNewsletterDetails((prev) => ({
                               ...prev,
                               image: e.target.files[0],
                             }));
@@ -1093,12 +1132,24 @@ function CreateTourForm({
                       onClick={(e) => {
                         e.stopPropagation();
                         setAssignNewsletterModalOpen(false);
+                        setNewsletterDetails({
+                          title: "",
+                          url: "",
+                          image: null,
+                        });
+                        setEditNewsletter(false);
                       }}
                     >
                       Cancel
                     </button>
-                    <button className="btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white cursor-pointer">
-                      Add
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleNewsletterDetailsSubmit();
+                      }}
+                      className="btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white cursor-pointer"
+                    >
+                      {editNewsletter ? "Update" : "Add"}
                     </button>
                   </div>
                 </div>

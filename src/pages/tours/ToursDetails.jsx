@@ -45,6 +45,14 @@ function ToursDetails() {
 
   //newsletter states
   const [newsletters, setNewsletters] = useState([]);
+  const [newsletterDetails, setNewsletterDetails] = useState({
+    title: "",
+    url: "",
+    image: "",
+  });
+  const [assignNewsletterModalOpen, setAssignNewsletterModalOpen] =
+    useState(false);
+  const [editNewsletter, setEditNewsletter] = useState(false);
 
   const getTourDetails = () => {
     setIsLoading(true);
@@ -378,7 +386,7 @@ function ToursDetails() {
         primary_participant_id,
         is_primary,
         full_name,
-        uid,
+        // uid,
         booking_details_url,
         portal_url,
         tour_participant_uid,
@@ -397,13 +405,11 @@ function ToursDetails() {
       }
 
       if (editParticipant) {
-        newParticipant.participant_id = uid;
+        newParticipant.participant_id = tour_participant_uid;
       }
 
       const response = await fetch(
-        `${apiURL}/api/v1/tours/${tourDetails?.uid}/participant${
-          editParticipant ? `/${uid}` : ""
-        }`,
+        `${apiURL}/api/v1/tours/${tourDetails?.uid}/participant`,
         {
           method: editParticipant ? "PUT" : "POST",
           headers: {
@@ -497,6 +503,82 @@ function ToursDetails() {
       });
   };
 
+  // newsletters functions
+  const handleNewsletterDetailsSubmit = async (id = null) => {
+    console.log("New newsletter details: ", newsletterDetails);
+
+    const { image } = newsletterDetails;
+
+    let imageUrl = image || null;
+
+    if (image && typeof image === "object") {
+      try {
+        imageUrl = await uploadFile(image);
+        console.log("Uploaded newsletter image URL:", imageUrl);
+      } catch (uploadError) {
+        console.error("Failed to upload newsletter image:", uploadError);
+        setStatus({
+          type: "error",
+          message: "Failed to upload newsletter image",
+        });
+        return;
+      }
+    }
+
+    let newTourDetails;
+
+    if (editNewsletter) {
+      const { idx } = newsletterDetails;
+      const updatedNewsletters = newsletters.map((newsletter, index) => {
+        if (index === idx) {
+          return {
+            ...newsletter,
+            title: newsletterDetails.title,
+            url: newsletterDetails.url,
+            image: imageUrl,
+          };
+        }
+        return newsletter;
+      });
+      newTourDetails = {
+        ...tourDetails,
+        newsletters: updatedNewsletters,
+      };
+    } else if (id) {
+      // remove newsletter at position removeNewsletter
+      const updatedNewsletters = newsletters.filter(
+        (newsletter, index) => index !== id
+      );
+      newTourDetails = {
+        ...tourDetails,
+        newsletters: updatedNewsletters,
+      };
+    } else {
+      newTourDetails = {
+        ...tourDetails,
+        newsletters: [
+          ...newsletters,
+          { ...newsletterDetails, image: imageUrl },
+        ],
+      };
+    }
+
+    console.log("New tour details: ", newTourDetails);
+    try {
+      updateTourAPICall(newTourDetails);
+    } catch (error) {
+      console.error("Error updating tour details:", error);
+      setStatus({
+        type: "error",
+        message: error?.message || "Something went wrong",
+      });
+    } finally {
+      setAssignNewsletterModalOpen(false);
+      setNewsletterDetails({ title: "", url: "", image: "" });
+      setEditNewsletter(false);
+    }
+  };
+
   useEffect(() => {
     getTourDetails();
   }, [id]);
@@ -511,15 +593,13 @@ function ToursDetails() {
       const hasImageUrl = !!newImageUrl;
       const hasItineraryUrl = !!newItineraryUrl;
 
-      // Wait until expected uploads are done
       if (
         (shouldUploadImage && !hasImageUrl) ||
         (shouldUploadItinerary && !hasItineraryUrl)
       ) {
-        return; // wait for required uploads to complete
+        return;
       }
 
-      // Exclude raw file/blob versions
       const { image, itinerary, ...rest } = tourDetails;
       const updatedTourDetails = {
         ...rest,
@@ -709,6 +789,13 @@ function ToursDetails() {
               setAssignParticipantModalOpen={setAssignParticipantModalOpen}
               newsletters={newsletters}
               handleUploadCSV={handleUploadCSV}
+              newsletterDetails={newsletterDetails}
+              setNewsletterDetails={setNewsletterDetails}
+              assignNewsletterModalOpen={assignNewsletterModalOpen}
+              setAssignNewsletterModalOpen={setAssignNewsletterModalOpen}
+              handleNewsletterDetailsSubmit={handleNewsletterDetailsSubmit}
+              editNewsletter={editNewsletter}
+              setEditNewsletter={setEditNewsletter}
             />
           </div>
         </main>
