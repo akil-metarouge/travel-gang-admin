@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { useStatus } from "../../utils/StatusContext";
 import Sidebar from "../../partials/Sidebar";
 import Header from "../../partials/Header";
 import SearchForm from "../../partials/actions/SearchForm";
 import PaginationClassic from "../../components/PaginationClassic";
 import GuidesTable from "../../partials/guides/GuidesTable";
 import ModalBasic from "../../components/ModalBasic";
-import { set } from "date-fns";
-import { useStatus } from "../../utils/StatusContext";
+import countries from "../../utils/countries.json";
 
 function Guides() {
   const apiURL = import.meta.env.VITE_BASE_URL;
@@ -14,7 +14,7 @@ function Guides() {
   const { setStatus } = useStatus();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [addGuideModalOpen, setAddGuideModalOpen] = useState(false);
-  const [nationalities, setNationalities] = useState([]);
+  const [nationalities, setNationalities] = useState(countries || []);
 
   const [page, setPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -102,18 +102,6 @@ function Guides() {
     getGuidesList();
   }, [page, searchText]);
 
-  useEffect(() => {
-    fetch("https://restcountries.com/v3.1/all")
-      .then((response) => response.json())
-      .then((data) => {
-        // console.log(data);
-        setNationalities(data.map((nation) => nation?.name?.common).sort());
-      })
-      .catch((error) => {
-        console.error("Error fetching guide details:", error);
-      });
-  }, [addGuideModalOpen]);
-
   return (
     <div className="flex h-[100dvh] overflow-hidden">
       {/* Sidebar */}
@@ -164,7 +152,7 @@ function Guides() {
                 <ModalBasic
                   id="guide-modal"
                   modalOpen={addGuideModalOpen}
-                  // setModalOpen={setAddGuideModalOpen}
+                  setModalOpen={setAddGuideModalOpen}
                   title="Add Guide"
                 >
                   {/* Modal content */}
@@ -277,14 +265,14 @@ function Guides() {
                           >
                             Select
                           </option>
-                          {nationalities?.map((nation) => {
+                          {nationalities?.map((nation, idx) => {
                             return (
                               <option
                                 className="dark:bg-gray-800 cursor-pointer"
-                                key={nation}
-                                value={nation}
+                                key={idx}
+                                value={nation?.name}
                               >
-                                {nation}
+                                {nation?.name}
                               </option>
                             );
                           })}

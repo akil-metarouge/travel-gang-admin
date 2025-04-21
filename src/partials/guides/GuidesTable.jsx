@@ -44,9 +44,9 @@ function GuidesTable({ list }) {
                   uid={guide?.uid}
                   id={guide?.identity_code}
                   name={guide?.full_name}
-                  ongoing={guide?.ongoing}
-                  upcoming={guide?.upcoming}
-                  completed={guide?.completed}
+                  ongoing={guide?.tour_stats?.ongoing_tours}
+                  upcoming={guide?.tour_stats?.upcoming_tours}
+                  completed={guide?.tour_stats?.completed_tours}
                   handleGuideMenuBtnClick={handleGuideMenuBtnClick}
                 />
               );

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
+import { useStatus } from "../../utils/StatusContext";
 import Sidebar from "../../partials/Sidebar";
 import Header from "../../partials/Header";
 import PaginationClassic from "../../components/PaginationClassic";
-import GuidesTable from "../../partials/guides/GuidesTable";
 import { useNavigate, useParams } from "react-router-dom";
 import GuideDetailsTable from "../../partials/guides/GuideDetailsTable";
 import DropdownEditMenu from "../../components/DropdownEditMenu";
 import ModalBasic from "../../components/ModalBasic";
-import { useStatus } from "../../utils/StatusContext";
+import countries from "../../utils/countries.json";
 
 function GuidesDetails() {
   const apiURL = import.meta.env.VITE_BASE_URL;
@@ -20,7 +20,7 @@ function GuidesDetails() {
   const [guideDetails, setGuideDetails] = useState(null);
   const [editGuideDetails, setEditGuideDetails] = useState(null);
   const [editGuideModalOpen, setEditGuideModalOpen] = useState(false);
-  const [nationalities, setNationalities] = useState([]);
+  const [nationalities, setNationalities] = useState(countries || []);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [ongoing, setOngoing] = useState([]);
@@ -91,19 +91,6 @@ function GuidesDetails() {
   useEffect(() => {
     getGuideDetails();
   }, [id]);
-
-  useEffect(() => {
-    console.log("editGuideMoadalOpen: ", editGuideModalOpen);
-    fetch("https://restcountries.com/v3.1/all")
-      .then((response) => response.json())
-      .then((data) => {
-        // console.log(data);
-        setNationalities(data.map((nation) => nation?.name?.common).sort());
-      })
-      .catch((error) => {
-        console.error("Error fetching guide details:", error);
-      });
-  }, [editGuideModalOpen]);
 
   useEffect(() => {
     setList(
@@ -338,14 +325,14 @@ function GuidesDetails() {
                       >
                         Select
                       </option>
-                      {nationalities?.map((nation) => {
+                      {nationalities?.map((nation, idx) => {
                         return (
                           <option
                             className="dark:bg-gray-800 cursor-pointer"
-                            key={nation}
-                            value={nation}
+                            key={idx}
+                            value={nation?.name}
                           >
-                            {nation}
+                            {nation?.name}
                           </option>
                         );
                       })}
