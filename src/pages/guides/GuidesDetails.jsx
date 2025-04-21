@@ -176,35 +176,16 @@ function GuidesDetails() {
                 </div>
 
                 <div className="flex justify-end items-center">
-                  <DropdownEditMenu
-                    align="right"
-                    rotate={true}
-                    className={`relative`}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditGuideModalOpen(true);
+                    }}
+                    className="font-medium bg-gray-800 dark:bg-gray-300 text-center text-sm dark:text-gray-600 text-gray-300 dark:hover:text-gray-800 hover:text-gray-200 w-20 h-8 rounded-full cursor-pointer"
+                    href="#0"
                   >
-                    <li>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditGuideModalOpen(true);
-                        }}
-                        className="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex py-1 px-3 w-full cursor-pointer"
-                        href="#0"
-                      >
-                        Edit
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        onClick={() => {
-                          console.log("remove clicked");
-                        }}
-                        className="font-medium text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 flex py-1 px-3 w-full cursor-pointer"
-                        href="#0"
-                      >
-                        Remove
-                      </button>
-                    </li>
-                  </DropdownEditMenu>
+                    Edit
+                  </button>
                 </div>
               </div>
             </div>

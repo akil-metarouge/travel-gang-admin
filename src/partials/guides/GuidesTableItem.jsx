@@ -46,32 +46,6 @@ function GuidesTableItem(props) {
             {props.completed}
           </div>
         </td>
-        <td className="px-2 first:pl-5 last:pr-10 py-3 whitespace-nowrap flex justify-end items-center">
-          <DropdownEditMenu align="left" className={`relative `}>
-            <li>
-              <button
-                onClick={() => {
-                  console.log("edit clicked");
-                }}
-                className="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex py-1 px-3 w-full cursor-pointer"
-                href="#0"
-              >
-                Edit
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  console.log("remove clicked");
-                }}
-                className="font-medium text-sm text-red-500 hover:text-red-600 flex py-1 px-3 w-full cursor-pointer"
-                href="#0"
-              >
-                Remove
-              </button>
-            </li>
-          </DropdownEditMenu>
-        </td>
       </tr>
     </tbody>
   );
