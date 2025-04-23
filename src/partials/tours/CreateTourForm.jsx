@@ -133,7 +133,7 @@ function CreateTourForm({
   return (
     <div className="flex">
       <main className="grow">
-        <div className="px-4 sm:px-6 lg:px-8 w-full max-w-[96rem] mx-auto">
+        <div className="md:px-6 lg:px-8 w-full max-w-[96rem] mx-auto">
           <div className="grid gap-5 md:grid-cols-3">
             <div className="px-6 py-6">
               {/* Start */}
@@ -550,7 +550,7 @@ function CreateTourForm({
                             </div>
                           </div>
                           <div className="col-span-2 flex items-center justify-between">
-                            <div className="text-gray-500">
+                            <div className="text-gray-500 max-w-20 overflow-hidden text-ellipsis whitespace-nowrap">
                               ID: {participant?.identity_code}
                             </div>
                             <DropdownEditMenu
@@ -873,7 +873,7 @@ function CreateTourForm({
                           image: null,
                         });
                       }}
-                      className="btn w-60 bg-gray-300 dark:bg-gray-700 cursor-pointer hover:bg-gray-400 dark:hover:bg-gray-600"
+                      className="btn md:w-60 bg-gray-300 dark:bg-gray-700 cursor-pointer hover:bg-gray-400 dark:hover:bg-gray-600"
                     >
                       + Add Newsletter
                     </button>
@@ -892,7 +892,7 @@ function CreateTourForm({
                           key={idx}
                           className="grid grid-cols-2 items-center py-4 bg-gray-300 dark:bg-gray-700 rounded-lg p-2 my-2"
                         >
-                          <div className="flex gap-4 items-center">
+                          <div className="md:flex gap-4 items-center">
                             <div className="w-16 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
                               <img
                                 src={newsletter?.image}
@@ -900,7 +900,7 @@ function CreateTourForm({
                                 className="w-full h-full object-cover"
                               />
                             </div>
-                            <div className="font-medium">
+                            <div className="font-medium max-w-8/9 overflow-hidden text-ellipsis whitespace-nowrap">
                               {newsletter?.title}
                             </div>
                           </div>

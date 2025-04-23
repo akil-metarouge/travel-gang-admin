@@ -737,7 +737,7 @@ function ToursDetails() {
                     />
                   </svg>
                 </button>
-                <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
+                <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold max-w-xs md:max-w-lg truncate ml-3">
                   {tourDetails?.name}
                 </h1>
               </div>

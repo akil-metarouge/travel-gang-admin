@@ -64,7 +64,7 @@ function SendNotifications() {
         <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
         <main className="grow">
-          <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-[96rem] mx-auto">
+          <div className="px-4 md:px-6 lg:px-8 py-8 w-full max-w-[96rem] mx-auto">
             {/* Page header */}
             <div className="sm:flex sm:justify-between sm:items-center mb-5">
               {/* Left: Title */}
@@ -77,7 +77,7 @@ function SendNotifications() {
 
             {/* Form */}
             <div className="grid justify-center md:mt-20">
-              <div className="px-5 py-5 w-[600px] bg-gray-200 dark:bg-gray-800 rounded-lg">
+              <div className="px-4 py-5 sm:w-[400px] md:w-[600px] bg-gray-200 dark:bg-gray-800 rounded-lg">
                 <div className="space-y-3">
                   <div>
                     <label
