@@ -110,25 +110,25 @@ function CreateTourForm({
     };
   }, [itinerary]);
 
-  useEffect(() => {
-    console.log("tourDetails: ", tourDetails);
-  }, [tourDetails]);
-
   // useEffect(() => {
-  //   console.log("participantDetails: ", participantDetails);
-  // }, [participantDetails]);
+  //   console.log("tourDetails: ", tourDetails);
+  // }, [tourDetails]);
+
+  useEffect(() => {
+    console.log("participantDetails: ", participantDetails);
+  }, [participantDetails]);
 
   // useEffect(() => {
   //   console.log("assignParticipantModalOpen: ", assignParticipantModalOpen);
   // }, [assignParticipantModalOpen]);
 
-  useEffect(() => {
-    console.log("assignNewsletterModalOpen: ", assignNewsletterModalOpen);
-  }, [assignNewsletterModalOpen]);
+  // useEffect(() => {
+  //   console.log("assignNewsletterModalOpen: ", assignNewsletterModalOpen);
+  // }, [assignNewsletterModalOpen]);
 
-  useEffect(() => {
-    console.log("guidesList: ", guidesList);
-  }, [guidesList]);
+  // useEffect(() => {
+  //   console.log("guidesList: ", guidesList);
+  // }, [guidesList]);
 
   return (
     <div className="flex">
@@ -373,6 +373,7 @@ function CreateTourForm({
                       id="guide-modal"
                       modalOpen={assignGuideModalOpen}
                       setModalOpen={setAssignGuideModalOpen}
+                      setSearchText={setGuideSearchText}
                       title="Assign Guides"
                     >
                       {/* Modal content */}
@@ -421,7 +422,7 @@ function CreateTourForm({
                                     <div
                                       className={`w-4 h-4 border-${
                                         guide?.selected
-                                          ? "4 bg-white border-pink-500"
+                                          ? "2 border-pink-500 bg-white dark:bg-gray-800"
                                           : "2 border-gray-300 dark:border-gray-600"
                                       } rounded-full mr-3`}
                                     ></div>
@@ -461,6 +462,7 @@ function CreateTourForm({
                             className="btn border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-gray-800 dark:text-gray-300 cursor-pointer"
                             onClick={(e) => {
                               e.stopPropagation();
+                              setGuideSearchText("");
                               setAssignGuideModalOpen(false);
                             }}
                           >
@@ -687,14 +689,15 @@ function CreateTourForm({
                       <div className="mt-4 flex items-center gap-2">
                         <input
                           type="checkbox"
-                          className="form-checkbox rounded-full checked:bg-green-600 checked:border-transparent w-6 h-6 cursor-pointer"
+                          className="form-checkbox rounded-full checked:bg-green-600 checked:border-transparent w-6 h-6"
                           checked={!!participantDetails?.is_primary}
-                          onChange={() =>
-                            setParticipantDetails((prev) => ({
-                              ...prev,
-                              is_primary: !prev.is_primary,
-                            }))
-                          }
+                          disabled
+                          // onChange={() =>
+                          //   setParticipantDetails((prev) => ({
+                          //     ...prev,
+                          //     is_primary: !prev.is_primary,
+                          //   }))
+                          // }
                         />
                         <p className="text-sm font-semibold">
                           Primary Participant
@@ -711,27 +714,33 @@ function CreateTourForm({
                       <select
                         id="select-primary-participant"
                         className="form-select w-full px-2 py-2 cursor-pointer disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
-                        disabled={participants?.length < 2}
+                        disabled={participants?.length < 1}
                         value={participantDetails?.primary_participant_id ?? ""}
                         onChange={(e) =>
                           setParticipantDetails((prev) => ({
                             ...prev,
                             primary_participant_id: e.target.value,
+                            is_primary:
+                              e.target.value === participantDetails?.uid,
                           }))
                         }
                       >
                         <option value="" disabled hidden>
                           Select
                         </option>
-                        {participants?.map((participant, idx) => (
-                          <option
-                            className="dark:bg-gray-800 cursor-pointer"
-                            key={idx}
-                            value={participant?.uid}
-                          >
-                            {participant?.full_name}
-                          </option>
-                        ))}
+                        {participants
+                          // ?.filter((participant) => {
+                          //   return participant?.uid !== participantDetails?.uid;
+                          // })
+                          ?.map((participant, idx) => (
+                            <option
+                              className="dark:bg-gray-800 cursor-pointer"
+                              key={idx}
+                              value={participant?.uid}
+                            >
+                              {participant?.full_name}
+                            </option>
+                          ))}
                       </select>
                     </div>
                     <div>

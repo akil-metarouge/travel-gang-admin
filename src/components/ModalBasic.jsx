@@ -1,7 +1,14 @@
 import React, { useRef, useEffect } from "react";
 import Transition from "../utils/Transition";
 
-function ModalBasic({ children, id, title, modalOpen, setModalOpen }) {
+function ModalBasic({
+  children,
+  id,
+  title,
+  modalOpen,
+  setModalOpen,
+  setSearchText = () => {},
+}) {
   const modalContent = useRef(null);
 
   // close on click outside
@@ -9,6 +16,7 @@ function ModalBasic({ children, id, title, modalOpen, setModalOpen }) {
     const clickHandler = ({ target }) => {
       if (!modalOpen || modalContent.current.contains(target)) return;
       setModalOpen(false);
+      setGuideSearchText("");
     };
     document.addEventListener("click", clickHandler);
     return () => document.removeEventListener("click", clickHandler);
@@ -19,6 +27,7 @@ function ModalBasic({ children, id, title, modalOpen, setModalOpen }) {
     const keyHandler = ({ keyCode }) => {
       if (!modalOpen || keyCode !== 27) return;
       setModalOpen(false);
+      setSearchText("");
     };
     document.addEventListener("keydown", keyHandler);
     return () => document.removeEventListener("keydown", keyHandler);
@@ -67,6 +76,7 @@ function ModalBasic({ children, id, title, modalOpen, setModalOpen }) {
                 onClick={(e) => {
                   e.stopPropagation();
                   setModalOpen(false);
+                  setSearchText("");
                 }}
               >
                 <div className="sr-only">Close</div>

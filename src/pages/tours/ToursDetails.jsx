@@ -293,7 +293,7 @@ function ToursDetails() {
       .then((data) => {
         if (data?.response) {
           console.log("Guides updated successfully:", data?.response);
-          setStatus({ type: "success", message: "Guides Assigned" });
+          setStatus({ type: "success", message: "Guides List Modified" });
           setAssignGuideModalOpen(false);
           getTourDetails();
         }
@@ -430,7 +430,12 @@ function ToursDetails() {
       const data = await response.json();
       if (response.ok) {
         console.log("Participant added successfully:", data?.response);
-        setStatus({ type: "success", message: "New Participant Added" });
+        setStatus({
+          type: "success",
+          message: editParticipant
+            ? "Participant Updated"
+            : "Participant Added",
+        });
         setAssignParticipantModalOpen(false);
         setParticipantDetails({
           primary_participant_id: null,
