@@ -110,13 +110,13 @@ function CreateTourForm({
     };
   }, [itinerary]);
 
-  // useEffect(() => {
-  //   console.log("tourDetails: ", tourDetails);
-  // }, [tourDetails]);
-
   useEffect(() => {
-    console.log("participantDetails: ", participantDetails);
-  }, [participantDetails]);
+    console.log("tourDetails: ", tourDetails);
+  }, [tourDetails]);
+
+  // useEffect(() => {
+  //   console.log("participantDetails: ", participantDetails);
+  // }, [participantDetails]);
 
   // useEffect(() => {
   //   console.log("assignParticipantModalOpen: ", assignParticipantModalOpen);
@@ -146,7 +146,7 @@ function CreateTourForm({
                         ? image
                         : image instanceof Blob
                         ? URL.createObjectURL(image)
-                        : ""
+                        : null
                     }
                     alt="Preview-Image"
                     className="object-cover h-60 rounded-lg"
@@ -209,7 +209,7 @@ function CreateTourForm({
                         ? itinerary
                         : itinerary instanceof Blob || itinerary instanceof File
                         ? URL.createObjectURL(itinerary)
-                        : ""
+                        : null
                     }
                     alt="Preview-Itinerary"
                     className="object-cover h-60 rounded-lg"
@@ -825,9 +825,27 @@ function CreateTourForm({
                       </div>
                       {participantDetails?.booking_details_url && (
                         <div className="mt-4 flex items-center gap-2 text-sm w-full overflow-hidden">
-                          {participantDetails?.booking_details_url?.name ??
-                            participantDetails?.booking_details_url ??
-                            ""}
+                          {participantDetails?.booking_details_url ? (
+                            <a
+                              href={
+                                typeof participantDetails.booking_details_url ===
+                                "string"
+                                  ? participantDetails.booking_details_url
+                                  : participantDetails.booking_details_url?.url
+                              }
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 underline"
+                            >
+                              {participantDetails.booking_details_url.name ??
+                                (typeof participantDetails.booking_details_url ===
+                                "string"
+                                  ? participantDetails.booking_details_url
+                                  : "View PDF")}
+                            </a>
+                          ) : (
+                            ""
+                          )}
                         </div>
                       )}
                     </div>
@@ -904,7 +922,7 @@ function CreateTourForm({
                           <div className="md:flex gap-4 items-center">
                             <div className="w-16 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
                               <img
-                                src={newsletter?.image}
+                                src={newsletter?.image || null}
                                 alt="User"
                                 className="w-full h-full object-cover"
                               />
@@ -1058,7 +1076,7 @@ function CreateTourForm({
                           <img
                             src={
                               typeof newsletterDetails?.image === "object"
-                                ? URL.createObjectURL(newsletterDetails.image)
+                                ? URL.createObjectURL(newsletterDetails?.image)
                                 : newsletterDetails?.image
                             }
                             alt="Image"

@@ -172,7 +172,7 @@ function CreateTour() {
   };
 
   useEffect(() => {
-    if (isLoading) {
+    if (isLoading && tourDetails?.code) {
       const shouldUploadImage = !!tourDetails?.image_url;
       const shouldUploadItinerary = !!tourDetails?.itinerary;
 
