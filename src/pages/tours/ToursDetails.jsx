@@ -384,6 +384,7 @@ function ToursDetails() {
 
       const {
         primary_participant_id,
+        primary_participant_uid,
         is_primary,
         full_name,
         // uid,
@@ -396,8 +397,8 @@ function ToursDetails() {
         ...rest,
         name: full_name,
         // booking_details_url: fileUrl,
-        is_primary: is_primary ? true : false,
-        primary_participant_id: !is_primary ? primary_participant_id : null,
+        // is_primary: is_primary,
+        primary_participant_id: primary_participant_id ?? null,
       };
 
       if (fileUrl) {
@@ -436,11 +437,11 @@ function ToursDetails() {
             ? "Participant Updated"
             : "Participant Added",
         });
-        setAssignParticipantModalOpen(false);
         setParticipantDetails({
           primary_participant_id: null,
           is_primary: false,
         });
+        setAssignParticipantModalOpen(false);
         setEditParticipant(false);
         getTourDetails();
       } else {

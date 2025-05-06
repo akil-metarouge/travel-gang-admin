@@ -65,12 +65,23 @@ function CreateTourForm({
   }, []);
 
   useEffect(() => {
-    if (tourDetails?.image_url && !hasInitialized.current) {
+    if (
+      (tourDetails?.image_url ||
+        tourDetails?.start_date ||
+        tourDetails?.end_date ||
+        tourDetails?.itinerary) &&
+      !hasInitialized.current
+    ) {
       hasInitialized.current = true;
 
       setImage(tourDetails?.image_url ? tourDetails.image_url : null);
       setItinerary(tourDetails?.itinerary ? tourDetails.itinerary : null);
 
+      console.log(
+        "Setting date range: ",
+        tourDetails.start_date,
+        tourDetails.end_date
+      );
       if (tourDetails?.start_date && tourDetails?.end_date) {
         const previousSetDate = {
           from: new Date(tourDetails.start_date),
@@ -114,9 +125,9 @@ function CreateTourForm({
     console.log("tourDetails: ", tourDetails);
   }, [tourDetails]);
 
-  // useEffect(() => {
-  //   console.log("participantDetails: ", participantDetails);
-  // }, [participantDetails]);
+  useEffect(() => {
+    console.log("participantDetails: ", participantDetails);
+  }, [participantDetails]);
 
   // useEffect(() => {
   //   console.log("assignParticipantModalOpen: ", assignParticipantModalOpen);
@@ -715,13 +726,20 @@ function CreateTourForm({
                         id="select-primary-participant"
                         className="form-select w-full px-2 py-2 cursor-pointer disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
                         disabled={participants?.length < 1}
-                        value={participantDetails?.primary_participant_id ?? ""}
+                        value={
+                          participantDetails?.primary_participant_id ??
+                          participantDetails?.primary_participant_uid ??
+                          ""
+                        }
                         onChange={(e) =>
                           setParticipantDetails((prev) => ({
                             ...prev,
                             primary_participant_id: e.target.value,
                             is_primary:
-                              e.target.value === participantDetails?.uid,
+                              e.target.value === participantDetails?.uid ||
+                              participantDetails?.is_primary
+                                ? true
+                                : false,
                           }))
                         }
                       >

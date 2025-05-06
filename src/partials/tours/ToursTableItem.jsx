@@ -8,6 +8,16 @@ function ToursTableItem(props) {
     navigate(`/tours/${id}`);
   };
 
+  const formatDateToLocal = (utcString) => {
+    if (utcString) {
+      const localDate = new Date(utcString);
+      const day = String(localDate.getDate()).padStart(2, "0");
+      const month = String(localDate.getMonth() + 1).padStart(2, "0"); // Month is 0-indexed
+      const year = localDate.getFullYear();
+      return `${day}-${month}-${year}`;
+    }
+  };
+
   return (
     <tbody className="text-sm">
       {/* Row */}
@@ -36,7 +46,7 @@ function ToursTableItem(props) {
         </td>
         <td className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div className="font-medium text-gray-700 dark:text-gray-300">
-            {props?.date.slice(0, 10)}
+            {props?.date ? formatDateToLocal(props.date) : ""}
           </div>
         </td>
         <td className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
