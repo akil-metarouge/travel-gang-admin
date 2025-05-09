@@ -149,7 +149,7 @@ function CreateTourForm({
             <div className="px-6 py-6">
               {/* Start */}
               {image ? (
-                <div className="relative h-60 mb-8 flex items-center justify-center">
+                <div className="relative h-73 mb-8 flex items-center justify-center">
                   <img
                     key={image?.name}
                     src={
@@ -160,7 +160,7 @@ function CreateTourForm({
                         : null
                     }
                     alt="Preview-Image"
-                    className="object-cover h-60 rounded-lg"
+                    className="object-cover h-73 rounded-lg"
                   />
                   <button
                     onClick={() => {
@@ -188,7 +188,7 @@ function CreateTourForm({
                   </button>
                 </div>
               ) : (
-                <div className="relative h-60 mb-8 border-2 border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800">
+                <div className="relative h-73 mb-8 border-2 border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800">
                   <input
                     id="file-upload"
                     type="file"
@@ -213,7 +213,7 @@ function CreateTourForm({
               )}
 
               {itinerary ? (
-                <div className="relative h-60 mb-8 flex items-center justify-center">
+                <div className="relative h-73 mb-8 flex items-center justify-center">
                   <iframe
                     src={
                       typeof itinerary === "string"
@@ -223,7 +223,7 @@ function CreateTourForm({
                         : null
                     }
                     alt="Preview-Itinerary"
-                    className="object-cover h-60 rounded-lg"
+                    className="object-cover h-73 rounded-lg"
                     title="Itinerary Preview"
                   ></iframe>
                   <button
@@ -246,7 +246,7 @@ function CreateTourForm({
                   </button>
                 </div>
               ) : (
-                <div className="relative h-60 border-2 border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800">
+                <div className="relative h-73 border-2 border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800">
                   <input
                     id="file-upload"
                     type="file"
@@ -274,7 +274,7 @@ function CreateTourForm({
 
             <div className="py-6">
               {/* Start */}
-              <div className="h-[515px] bg-gray-200 dark:bg-gray-800 rounded-lg p-6">
+              <div className="h-[615px] bg-gray-200 dark:bg-gray-800 rounded-lg p-6">
                 <h2 className="text-xl font-bold">Details</h2>
                 <div className="pt-4">
                   <div>
@@ -299,7 +299,7 @@ function CreateTourForm({
                   </div>
                   {/* <div className="text-xs mt-1">Supporting text goes here!</div> */}
                 </div>
-                <div className="py-4">
+                <div className="pt-4">
                   <div>
                     <label
                       className="block text-sm font-medium mb-1"
@@ -316,6 +316,29 @@ function CreateTourForm({
                         setTourDetails({
                           ...tourDetails,
                           name: e.target.value,
+                        });
+                      }}
+                    />
+                  </div>
+                  {/* <div className="text-xs mt-1">Supporting text goes here!</div> */}
+                </div>
+                <div className="py-4">
+                  <div>
+                    <label
+                      className="block text-sm font-medium mb-1"
+                      htmlFor="group-link"
+                    >
+                      WhatsApp Group Link
+                    </label>
+                    <input
+                      id="group-link"
+                      className="form-input w-full"
+                      type="text"
+                      value={tourDetails?.wa_group_link ?? ""}
+                      onChange={(e) => {
+                        setTourDetails({
+                          ...tourDetails,
+                          wa_group_link: e.target.value,
                         });
                       }}
                     />
@@ -500,7 +523,7 @@ function CreateTourForm({
 
             <div className="py-6">
               {/* Start */}
-              <div className="h-[515px] bg-gray-200 dark:bg-gray-800 rounded-lg p-6">
+              <div className="h-[615px] bg-gray-200 dark:bg-gray-800 rounded-lg p-6">
                 <h2 className="text-xl font-bold">
                   Participants
                   {participants?.length ? "(" + participants.length + ")" : ""}
