@@ -7,7 +7,7 @@ function SendNotifications() {
   const [notificationDetails, setNotificationDetails] = useState({
     title: "",
     body: "",
-    type: "",
+    type: "ongoing",
   });
 
   const sendNotification = () => {
@@ -35,17 +35,19 @@ function SendNotifications() {
         console.log(data);
         if (data?.response) {
           console.log("Notification sent successfully:", data?.response);
-          setNotificationDetails({
-            title: "",
-            body: "",
-            type: "",
-          });
         } else {
           console.error("Error sending notification:", data?.message);
         }
       })
       .catch((error) => {
         console.error("Error sending notification:", error);
+      })
+      .finally(() => {
+        setNotificationDetails({
+          title: "",
+          body: "",
+          type: "ongoing",
+        });
       });
   };
 
