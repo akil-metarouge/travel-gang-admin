@@ -79,7 +79,7 @@ function Tours() {
   // fetch tours
   useEffect(() => {
     fetchTours();
-  }, []);
+  }, [currentPage]);
 
   useEffect(() => {
     setList(

@@ -1,11 +1,6 @@
-import React, { useState, useEffect } from "react";
 import GuidesTableItem from "./GuidesTableItem";
 
 function GuidesTable({ list }) {
-  const handleGuideMenuBtnClick = () => {
-    console.log("clicked");
-  };
-
   return (
     <div className="bg-white dark:bg-gray-800 shadow-xs rounded-xl relative">
       <div>
@@ -47,7 +42,6 @@ function GuidesTable({ list }) {
                   ongoing={guide?.tour_stats?.ongoing_tours}
                   upcoming={guide?.tour_stats?.upcoming_tours}
                   completed={guide?.tour_stats?.completed_tours}
-                  handleGuideMenuBtnClick={handleGuideMenuBtnClick}
                 />
               );
             })}

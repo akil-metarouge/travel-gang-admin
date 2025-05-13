@@ -1,5 +1,4 @@
 import React from "react";
-import DropdownEditMenu from "../../components/DropdownEditMenu";
 import { useNavigate } from "react-router-dom";
 
 function GuidesTableItem(props) {

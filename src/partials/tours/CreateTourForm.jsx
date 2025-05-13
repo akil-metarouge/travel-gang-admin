@@ -121,13 +121,13 @@ function CreateTourForm({
     };
   }, [itinerary]);
 
-  useEffect(() => {
-    console.log("tourDetails: ", tourDetails);
-  }, [tourDetails]);
+  // useEffect(() => {
+  //   console.log("tourDetails: ", tourDetails);
+  // }, [tourDetails]);
 
-  useEffect(() => {
-    console.log("participantDetails: ", participantDetails);
-  }, [participantDetails]);
+  // useEffect(() => {
+  //   console.log("participantDetails: ", participantDetails);
+  // }, [participantDetails]);
 
   // useEffect(() => {
   //   console.log("assignParticipantModalOpen: ", assignParticipantModalOpen);

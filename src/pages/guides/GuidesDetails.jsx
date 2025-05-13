@@ -86,6 +86,73 @@ function GuidesDetails() {
 
   const saveGuideDetails = () => {
     console.log("edit: ", editGuideDetails);
+    fetch(`${apiURL}/api/v1/users/edit-guide/${id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(editGuideDetails),
+    })
+      .then((response) => {
+        if (response.status === 401 || response.status === 403) {
+          // Sign out
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          navigate("/signin");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Guide details updated: ", data?.response);
+        setStatus({
+          type: "success",
+          message: data?.message || "Guide details updated successfully",
+        });
+        setEditGuideModalOpen(false);
+        getGuideDetails();
+      })
+      .catch((error) => {
+        console.error("Error updating guide details:", error);
+        setStatus({
+          type: "error",
+          message: error?.message || "Something went wrong",
+        });
+      });
+  };
+
+  const deleteGuide = () => {
+    fetch(`${apiURL}/api/v1/users/delete-guide/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (response.status === 401 || response.status === 403) {
+          // Sign out
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          navigate("/signin");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Guide deleted: ", data?.response);
+        setStatus({
+          type: "success",
+          message: data?.message || "Guide deleted successfully",
+        });
+        navigate("/guides");
+      })
+      .catch((error) => {
+        console.error("Error deleting guide:", error);
+        setStatus({
+          type: "error",
+          message: error?.message || "Something went wrong",
+        });
+      });
   };
 
   useEffect(() => {
@@ -176,7 +243,7 @@ function GuidesDetails() {
                 </div>
 
                 <div className="flex justify-end items-center">
-                  <button
+                  {/* <button
                     onClick={(e) => {
                       e.stopPropagation();
                       setEditGuideModalOpen(true);
@@ -185,7 +252,32 @@ function GuidesDetails() {
                     href="#0"
                   >
                     Edit
-                  </button>
+                  </button> */}
+                  <DropdownEditMenu align="left" className={`relative`}>
+                    <li>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditGuideModalOpen(true);
+                        }}
+                        className="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex py-1 px-3 w-full cursor-pointer"
+                        href="#0"
+                      >
+                        Edit
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        onClick={() => {
+                          deleteGuide();
+                        }}
+                        className="font-medium text-sm text-red-500 hover:text-red-600 flex py-1 px-3 w-full cursor-pointer"
+                        href="#0"
+                      >
+                        Delete
+                      </button>
+                    </li>
+                  </DropdownEditMenu>
                 </div>
               </div>
             </div>

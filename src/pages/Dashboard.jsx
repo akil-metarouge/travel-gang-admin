@@ -1,98 +1,175 @@
-import React, { useState } from 'react';
-
-import Sidebar from '../partials/Sidebar';
-import Header from '../partials/Header';
-import FilterButton from '../components/DropdownFilter';
-import Datepicker from '../components/Datepicker';
-import DashboardCard01 from '../partials/dashboard/DashboardCard01';
-import DashboardCard02 from '../partials/dashboard/DashboardCard02';
-import DashboardCard03 from '../partials/dashboard/DashboardCard03';
-import DashboardCard04 from '../partials/dashboard/DashboardCard04';
-import DashboardCard05 from '../partials/dashboard/DashboardCard05';
-import DashboardCard06 from '../partials/dashboard/DashboardCard06';
-import DashboardCard07 from '../partials/dashboard/DashboardCard07';
-import DashboardCard08 from '../partials/dashboard/DashboardCard08';
-import DashboardCard09 from '../partials/dashboard/DashboardCard09';
-import DashboardCard10 from '../partials/dashboard/DashboardCard10';
-import DashboardCard11 from '../partials/dashboard/DashboardCard11';
+import React, { useEffect, useState } from "react";
+import Sidebar from "../partials/Sidebar";
+import Header from "../partials/Header";
+import PaginationClassic from "../components/PaginationClassic";
+import ToursTable from "../partials/tours/ToursTable";
+import { useNavigate } from "react-router-dom";
+import { useStatus } from "../utils/StatusContext";
 
 function Dashboard() {
-
+  const apiURL = import.meta.env.VITE_BASE_URL;
+  const token = localStorage.getItem("token");
+  const { setStatus } = useStatus();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // List in display
+  const [list, setList] = useState([]);
+  // handle pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  // tour cycles
+  const [ongoing, setOngoing] = useState([]);
+  const [ongoingCount, setOngoingCount] = useState(null);
+  const [upcoming, setUpcoming] = useState([]);
+  const [upcomingCount, setUpcomingCount] = useState(null);
+  const [selectedCycle, setSelectedCycle] = useState("ongoing");
+
+  const handleCycleSelection = (e) => {
+    e.preventDefault();
+    setSelectedCycle(
+      e.target.textContent.toLowerCase().includes("upcoming")
+        ? "upcoming"
+        : "ongoing"
+    );
+    setCurrentPage(1);
+  };
+
+  const fetchTours = () => {
+    fetch(`${apiURL}/api/v1/tours/?page=${currentPage}&perpage=10`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (response.status === 401 || response.status === 403) {
+          // Sign out
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          navigate("/signin");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data?.response);
+        setOngoing(data?.response?.tours?.ongoing);
+        setOngoingCount(data?.response?.counts?.ongoing);
+        setUpcoming(data?.response?.tours?.upcoming);
+        setUpcomingCount(data?.response?.counts?.upcoming);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setStatus({
+          type: "error",
+          message: error?.message || "Something went wrong",
+        });
+      });
+  };
+
+  // fetch tours
+  useEffect(() => {
+    fetchTours();
+  }, [currentPage]);
+
+  useEffect(() => {
+    setList(selectedCycle === "upcoming" ? upcoming : ongoing);
+  }, [selectedCycle, ongoing, upcoming]);
 
   return (
     <div className="flex h-[100dvh] overflow-hidden">
-
       {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       {/* Content area */}
       <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-
         {/*  Site header */}
         <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
         <main className="grow">
           <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-[96rem] mx-auto">
-
-            {/* Dashboard actions */}
+            {/* Page header */}
             <div className="sm:flex sm:justify-between sm:items-center mb-8">
-
               {/* Left: Title */}
               <div className="mb-4 sm:mb-0">
-                <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Dashboard</h1>
+                <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
+                  Dashboard
+                </h1>
               </div>
-
-              {/* Right: Actions */}
-              <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-                {/* Filter button */}
-                <FilterButton align="right" />
-                {/* Datepicker built with React Day Picker */}
-                <Datepicker align="right" />
-                {/* Add view button */}
-                <button className="btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white">
-                  <svg className="fill-current shrink-0 xs:hidden" width="16" height="16" viewBox="0 0 16 16">
-                    <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z" />
-                  </svg>
-                  <span className="max-xs:sr-only">Add View</span>
-                </button>                
-              </div>
-
             </div>
 
-            {/* Cards */}
-            <div className="grid grid-cols-12 gap-6">
-
-              {/* Line chart (Acme Plus) */}
-              <DashboardCard01 />
-              {/* Line chart (Acme Advanced) */}
-              <DashboardCard02 />
-              {/* Line chart (Acme Professional) */}
-              <DashboardCard03 />
-              {/* Bar chart (Direct vs Indirect) */}
-              <DashboardCard04 />
-              {/* Line chart (Real Time Value) */}
-              <DashboardCard05 />
-              {/* Doughnut chart (Top Countries) */}
-              <DashboardCard06 />
-              {/* Table (Top Channels) */}
-              <DashboardCard07 />
-              {/* Line chart (Sales Over Time) */}
-              <DashboardCard08 />
-              {/* Stacked bar chart (Sales VS Refunds) */}
-              <DashboardCard09 />
-              {/* Card (Recent Activity) */}
-              <DashboardCard10 />
-              {/* Card (Income/Expenses) */}
-              <DashboardCard11 />
-              
+            {/* More actions */}
+            <div className="sm:flex sm:justify-between sm:items-center mb-5">
+              {/* Left side */}
+              <div className="mb-4 sm:mb-0">
+                <ul className="flex flex-wrap -m-1">
+                  <li className="m-1">
+                    <button
+                      onClick={handleCycleSelection}
+                      className={`inline-flex items-center justify-center text-sm font-medium leading-5 rounded-full px-3 py-1 shadow-xs transition cursor-pointer ${
+                        selectedCycle === "ongoing"
+                          ? "border border-transparent  bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-800"
+                          : "border border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600  bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+                      }`}
+                    >
+                      Ongoing{" "}
+                      <span className="ml-1 text-gray-400 dark:text-gray-500">
+                        {ongoingCount}
+                      </span>
+                    </button>
+                  </li>
+                  <li className="m-1">
+                    <button
+                      onClick={handleCycleSelection}
+                      className={`inline-flex items-center justify-center text-sm font-medium leading-5 rounded-full px-3 py-1 shadow-xs transition cursor-pointer ${
+                        selectedCycle === "upcoming"
+                          ? "border border-transparent  bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-800"
+                          : "border border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600  bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+                      }`}
+                    >
+                      Upcoming{" "}
+                      <span className="ml-1 text-gray-400 dark:text-gray-500">
+                        {upcomingCount}
+                      </span>
+                    </button>
+                  </li>
+                </ul>
+              </div>
             </div>
 
+            {/* Table */}
+            <ToursTable list={list} />
+
+            {/* Pagination */}
+            <div className="mt-8">
+              <PaginationClassic
+                firstIndex={
+                  selectedCycle === "upcoming"
+                    ? upcomingCount === 0
+                      ? 0
+                      : (currentPage - 1) * 10 + 1
+                    : ongoingCount === 0
+                    ? 0
+                    : (currentPage - 1) * 10 + 1
+                }
+                lastIndex={
+                  selectedCycle === "upcoming"
+                    ? upcomingCount < currentPage * 10
+                      ? upcomingCount
+                      : currentPage * 10
+                    : ongoingCount < currentPage * 10
+                    ? ongoingCount
+                    : currentPage * 10
+                }
+                total={
+                  selectedCycle === "upcoming" ? upcomingCount : ongoingCount
+                }
+                page={currentPage}
+                setPage={setCurrentPage}
+              />
+            </div>
           </div>
         </main>
-
       </div>
-
     </div>
   );
 }

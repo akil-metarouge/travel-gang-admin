@@ -1,5 +1,3 @@
-import React from "react";
-
 function PaginationClassic({ firstIndex, lastIndex, total, page, setPage }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
