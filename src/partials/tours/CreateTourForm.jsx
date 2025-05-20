@@ -3,6 +3,7 @@ import DatePickerWithRange from "../../components/Datepicker";
 import ModalBasic from "../../components/ModalBasic";
 import SearchForm from "../actions/SearchForm";
 import DropdownEditMenu from "../../components/DropdownEditMenu";
+import { useStatus } from "../../utils/StatusContext";
 
 function CreateTourForm({
   tourDetails,
@@ -41,6 +42,7 @@ function CreateTourForm({
   const [image, setImage] = useState(null);
   const [itinerary, setItinerary] = useState(null);
   const [date, setDate] = useState(null);
+  const { setStatus } = useStatus();
 
   const handleAddNewGuideBtnClick = () => {
     console.log("Add New Guide Button Clicked");
@@ -196,11 +198,20 @@ function CreateTourForm({
                     accept="image/png, image/jpeg"
                     onChange={(e) => {
                       const file = e.target.files[0];
-                      setImage(file);
-                      setTourDetails((prev) => ({
-                        ...prev,
-                        image_url: file,
-                      }));
+                      if (file?.size > 10 * 1024 * 1024) {
+                        setStatus({
+                          type: "error",
+                          message:
+                            "File is too large. Maximum size allowed is 10MB.",
+                        });
+                        return;
+                      } else {
+                        setImage(file);
+                        setTourDetails((prev) => ({
+                          ...prev,
+                          image_url: file,
+                        }));
+                      }
                     }}
                   />
                   <label
@@ -254,11 +265,20 @@ function CreateTourForm({
                     accept="application/pdf"
                     onChange={(e) => {
                       const file = e.target.files[0];
-                      setItinerary(file);
-                      setTourDetails((prev) => ({
-                        ...prev,
-                        itinerary: file,
-                      }));
+                      if (file?.size > 10 * 1024 * 1024) {
+                        setStatus({
+                          type: "error",
+                          message:
+                            "File is too large. Maximum size allowed is 10MB.",
+                        });
+                        return;
+                      } else {
+                        setItinerary(file);
+                        setTourDetails((prev) => ({
+                          ...prev,
+                          itinerary: file,
+                        }));
+                      }
                     }}
                   />
                   <label
@@ -857,10 +877,20 @@ function CreateTourForm({
                           type="file"
                           id="bookingDetails"
                           onChange={(e) => {
-                            setParticipantDetails((prev) => ({
-                              ...prev,
-                              booking_details_url: e.target.files[0],
-                            }));
+                            const file = e.target.files[0];
+                            if (file?.size > 10 * 1024 * 1024) {
+                              setStatus({
+                                type: "error",
+                                message:
+                                  "File is too large. Maximum size allowed is 10MB.",
+                              });
+                              return;
+                            } else {
+                              setParticipantDetails((prev) => ({
+                                ...prev,
+                                booking_details_url: e.target.files[0],
+                              }));
+                            }
                           }}
                         />
                       </div>

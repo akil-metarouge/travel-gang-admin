@@ -16,7 +16,7 @@ function ModalBasic({
     const clickHandler = ({ target }) => {
       if (!modalOpen || modalContent.current.contains(target)) return;
       setModalOpen(false);
-      setGuideSearchText("");
+      setSearchText("");
     };
     document.addEventListener("click", clickHandler);
     return () => document.removeEventListener("click", clickHandler);

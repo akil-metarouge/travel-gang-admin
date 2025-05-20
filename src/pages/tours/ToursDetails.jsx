@@ -161,6 +161,10 @@ function ToursDetails() {
         return data.fileUrl;
       } else {
         console.error("Error uploading image:", data.message);
+        setStatus({
+          type: "error",
+          message: data?.message || "Something went wrong",
+        });
         return null;
       }
     } catch (error) {
