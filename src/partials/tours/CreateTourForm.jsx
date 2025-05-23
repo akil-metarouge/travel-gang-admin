@@ -38,7 +38,7 @@ function CreateTourForm({
   setEditNewsletter,
 }) {
   const [isCreateForm, setIsCreateForm] = useState(false);
-  const hasInitialized = useRef(false);
+  // const hasInitialized = useRef(false);
   const [image, setImage] = useState(null);
   const [itinerary, setItinerary] = useState(null);
   const [date, setDate] = useState(null);
@@ -68,13 +68,14 @@ function CreateTourForm({
 
   useEffect(() => {
     if (
-      (tourDetails?.image_url ||
-        tourDetails?.start_date ||
-        tourDetails?.end_date ||
-        tourDetails?.itinerary) &&
-      !hasInitialized.current
+      tourDetails?.image_url ||
+      tourDetails?.start_date ||
+      tourDetails?.end_date ||
+      tourDetails?.itinerary
+      //   &&
+      // !hasInitialized.current
     ) {
-      hasInitialized.current = true;
+      // hasInitialized.current = true;
 
       setImage(tourDetails?.image_url ? tourDetails.image_url : null);
       setItinerary(tourDetails?.itinerary ? tourDetails.itinerary : null);
@@ -238,7 +239,13 @@ function CreateTourForm({
                     title="Itinerary Preview"
                   ></iframe>
                   <button
-                    onClick={() => setItinerary(null)}
+                    onClick={() => {
+                      setItinerary(null);
+                      setTourDetails((prev) => ({
+                        ...prev,
+                        itinerary: null,
+                      }));
+                    }}
                     className="w-6 h-6 absolute [right:-10px] [top:-10px] bg-gray-300 rounded-full flex items-center justify-center cursor-pointer"
                   >
                     <svg

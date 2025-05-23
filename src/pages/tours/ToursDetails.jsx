@@ -115,6 +115,8 @@ function ToursDetails() {
         setStatus({ type: "success", message: "Tour Updated" });
         // navigate("/tours");
         getTourDetails();
+        setNewImageUrl(null);
+        setNewItineraryUrl(null);
       } else {
         console.error("Error updating tour:", data.message);
         setStatus({
@@ -610,11 +612,15 @@ function ToursDetails() {
         return;
       }
 
-      const { image, itinerary, ...rest } = tourDetails;
+      const { image_url, itinerary, ...rest } = tourDetails;
+      console.log("shouldUploadImage", shouldUploadImage);
+      console.log("shouldUploadItinerary", shouldUploadItinerary);
       const updatedTourDetails = {
         ...rest,
-        ...(shouldUploadImage && { image_url: newImageUrl }),
-        ...(shouldUploadItinerary && { itinerary: newItineraryUrl }),
+        ...(shouldUploadImage ? { image_url: newImageUrl } : { image_url }),
+        ...(shouldUploadItinerary
+          ? { itinerary: newItineraryUrl }
+          : { itinerary }),
       };
 
       console.log("Final tour update payload:", updatedTourDetails);
