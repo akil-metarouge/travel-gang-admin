@@ -66,6 +66,16 @@ function Dashboard() {
       });
   };
 
+  const handleCSVDownload = (e) => {
+    e.preventDefault();
+    const link = document.createElement("a");
+    link.href = "/assets/tour_csv_template.csv"; // public path
+    link.download = "csv_template.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // fetch tours
   useEffect(() => {
     fetchTours();
@@ -94,6 +104,16 @@ function Dashboard() {
                 <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
                   Dashboard
                 </h1>
+              </div>
+
+              {/* Right: Actions */}
+              <div className="flex flex-wrap sm:justify-end gap-4">
+                <button
+                  onClick={handleCSVDownload}
+                  className="inline-flex items-center justify-center text-xs font-medium leading-5 rounded-lg px-3 py-3 shadow-xs transition cursor-pointer bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-800 hover:bg-gray-800 dark:hover:bg-gray-200"
+                >
+                  Download CSV Template
+                </button>
               </div>
             </div>
 
@@ -166,6 +186,12 @@ function Dashboard() {
                 page={currentPage}
                 setPage={setCurrentPage}
               />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-4 text-end">
+                Call for Support: +61 435 785 822 | Email:
+                jithesh@metarouge.com.au
+              </p>
             </div>
           </div>
         </main>

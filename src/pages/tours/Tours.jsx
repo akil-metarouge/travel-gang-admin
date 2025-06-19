@@ -5,6 +5,7 @@ import PaginationClassic from "../../components/PaginationClassic";
 import ToursTable from "../../partials/tours/ToursTable";
 import { useNavigate } from "react-router-dom";
 import { useStatus } from "../../utils/StatusContext";
+import PageLoader from "../../components/PageLoader";
 
 function Tours() {
   const apiURL = import.meta.env.VITE_BASE_URL;
@@ -24,6 +25,7 @@ function Tours() {
   const [completed, setCompleted] = useState([]);
   const [completedCount, setCompletedCount] = useState(null);
   const [selectedCycle, setSelectedCycle] = useState("ongoing");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleCreateTourBtnClick = () => {
     navigate("/tours/create");
@@ -73,6 +75,43 @@ function Tours() {
           type: "error",
           message: error?.message || "Something went wrong",
         });
+      });
+  };
+
+  const deleteTour = (id) => {
+    setIsLoading(true);
+    fetch(`${apiURL}/api/v1/tours/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (response.status === 401 || response.status === 403) {
+          // Sign out
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          navigate("/signin");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setStatus({
+          type: "success",
+          message: "Tour Deleted Successfully",
+        });
+        fetchTours();
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setStatus({
+          type: "error",
+          message: error?.message || "Something went wrong",
+        });
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   };
 
@@ -189,7 +228,7 @@ function Tours() {
             </div>
 
             {/* Table */}
-            <ToursTable list={list} />
+            <ToursTable list={list} deleteTour={deleteTour} />
 
             {/* Pagination */}
             <div className="mt-8">
@@ -233,6 +272,7 @@ function Tours() {
             </div>
           </div>
         </main>
+        {isLoading && <PageLoader />}
       </div>
     </div>
   );

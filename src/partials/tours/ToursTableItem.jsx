@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import DropdownEditMenu from "../../components/DropdownEditMenu";
 
 function ToursTableItem(props) {
   const navigate = useNavigate();
@@ -58,6 +59,22 @@ function ToursTableItem(props) {
           <div className="text-left font-medium text-green-600">
             {props?.participants}
           </div>
+        </td>
+        <td>
+          <DropdownEditMenu align="left" className={`relative`}>
+            <li>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  props?.deleteTour(props?.uid);
+                }}
+                className="font-medium text-sm text-red-500 hover:text-red-600 flex py-1 px-3 w-full cursor-pointer"
+                href="#0"
+              >
+                Delete
+              </button>
+            </li>
+          </DropdownEditMenu>
         </td>
       </tr>
     </tbody>

@@ -1,7 +1,7 @@
 import React from "react";
 import ToursTableItem from "./ToursTableItem";
 
-function ToursTable({ list }) {
+function ToursTable({ list, deleteTour }) {
   return (
     <div className="bg-white dark:bg-gray-800 shadow-xs rounded-xl relative">
       <div>
@@ -40,6 +40,7 @@ function ToursTable({ list }) {
                   date={tour?.updatedAt}
                   guide={tour?.tour_guides?.length}
                   participants={tour?.tour_participants?.length}
+                  deleteTour={deleteTour}
                 />
               );
             })}
