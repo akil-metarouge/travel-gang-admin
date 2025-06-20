@@ -1100,7 +1100,7 @@ function CreateTourForm({
                 )}
               </div>
               <ModalBasic
-                id="participant-modal"
+                id="newsletter-modal"
                 modalOpen={assignNewsletterModalOpen}
                 setModalOpen={setAssignNewsletterModalOpen}
                 title={editNewsletter ? "Update Newsletter" : "Add Newsletter"}

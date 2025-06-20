@@ -5,6 +5,7 @@ import PaginationClassic from "../components/PaginationClassic";
 import ToursTable from "../partials/tours/ToursTable";
 import { useNavigate } from "react-router-dom";
 import { useStatus } from "../utils/StatusContext";
+import PageLoader from "../components/PageLoader";
 
 function Dashboard() {
   const apiURL = import.meta.env.VITE_BASE_URL;
@@ -22,6 +23,7 @@ function Dashboard() {
   const [upcoming, setUpcoming] = useState([]);
   const [upcomingCount, setUpcomingCount] = useState(null);
   const [selectedCycle, setSelectedCycle] = useState("ongoing");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleCycleSelection = (e) => {
     e.preventDefault();
@@ -34,6 +36,7 @@ function Dashboard() {
   };
 
   const fetchTours = () => {
+    setIsLoading(true);
     fetch(`${apiURL}/api/v1/tours/?page=${currentPage}&perpage=10`, {
       method: "GET",
       headers: {
@@ -63,6 +66,9 @@ function Dashboard() {
           type: "error",
           message: error?.message || "Something went wrong",
         });
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   };
 
@@ -157,7 +163,11 @@ function Dashboard() {
             </div>
 
             {/* Table */}
-            <ToursTable list={list} />
+            <ToursTable
+              list={list}
+              setIsLoading={setIsLoading}
+              fetchTours={fetchTours}
+            />
 
             {/* Pagination */}
             <div className="mt-8">
@@ -195,6 +205,7 @@ function Dashboard() {
             </div>
           </div>
         </main>
+        {isLoading && <PageLoader />}
       </div>
     </div>
   );

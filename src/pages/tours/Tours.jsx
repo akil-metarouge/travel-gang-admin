@@ -44,6 +44,7 @@ function Tours() {
   };
 
   const fetchTours = () => {
+    setIsLoading(true);
     fetch(`${apiURL}/api/v1/tours/?page=${currentPage}&perpage=10`, {
       method: "GET",
       headers: {
@@ -75,40 +76,6 @@ function Tours() {
           type: "error",
           message: error?.message || "Something went wrong",
         });
-      });
-  };
-
-  const deleteTour = (id) => {
-    setIsLoading(true);
-    fetch(`${apiURL}/api/v1/tours/${id}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((response) => {
-        if (response.status === 401 || response.status === 403) {
-          // Sign out
-          localStorage.removeItem("user");
-          localStorage.removeItem("token");
-          navigate("/signin");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setStatus({
-          type: "success",
-          message: "Tour Deleted Successfully",
-        });
-        fetchTours();
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        setStatus({
-          type: "error",
-          message: error?.message || "Something went wrong",
-        });
       })
       .finally(() => {
         setIsLoading(false);
@@ -129,8 +96,6 @@ function Tours() {
         : ongoing
     );
   }, [selectedCycle, ongoing, upcoming, completed]);
-
-  console.log("selectedCycle: ", selectedCycle);
 
   return (
     <div className="flex h-[100dvh] overflow-hidden">
@@ -228,7 +193,11 @@ function Tours() {
             </div>
 
             {/* Table */}
-            <ToursTable list={list} deleteTour={deleteTour} />
+            <ToursTable
+              list={list}
+              setIsLoading={setIsLoading}
+              fetchTours={fetchTours}
+            />
 
             {/* Pagination */}
             <div className="mt-8">
